@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { Trophy, CalendarDays, Medal, User, Home, Menu, Search } from "lucide-react";
+import { Trophy, CalendarDays, Medal, User, Home, Menu, Search, MoreVertical } from "lucide-react";
 
 interface NavbarProps {
   activeTab: string;
@@ -104,22 +104,32 @@ export function Navbar({ activeTab, setActiveTab }: NavbarProps) {
             ))}
           </div>
 
-          {/* Admin / Profile avatar */}
-          <Link
-            href="/admin"
-            style={{
-              width: 40,
-              height: 40,
-              borderRadius: "50%",
-              background: "linear-gradient(135deg, #1A56DB, #3b82f6)",
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "center",
-              boxShadow: "0 4px 12px rgba(26,86,219,0.3)",
-            }}
-          >
-            <User className="w-5 h-5 text-white" />
-          </Link>
+          {/* Right Header Actions: Admin link & 3-Dots Menu */}
+          <div className="flex items-center gap-3">
+            <Link
+              href="/admin"
+              style={{
+                width: 38,
+                height: 38,
+                borderRadius: "50%",
+                background: "linear-gradient(135deg, #1A56DB, #3b82f6)",
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+                boxShadow: "0 4px 12px rgba(26,86,219,0.3)",
+              }}
+              title="Admin Portal"
+            >
+              <User className="w-4 h-4 text-white" />
+            </Link>
+            <button
+              onClick={() => scrollToSection("scoreboard")}
+              className="p-2 rounded-xl bg-slate-50 hover:bg-slate-100 text-slate-600 transition-colors cursor-pointer border border-slate-200/60"
+              title="More Options"
+            >
+              <MoreVertical className="w-4 h-4 text-slate-600" />
+            </button>
+          </div>
         </div>
       </header>
 
