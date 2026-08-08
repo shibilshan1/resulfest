@@ -580,14 +580,14 @@ export default function AdminPage() {
                     Forgot Password?
                   </span>
                 </div>
-                <div className="relative flex items-center">
-                  <Lock className="w-5 h-5 text-slate-400 absolute left-4 pointer-events-none" />
+                <div className="flex items-center gap-3 px-4 py-3.5 rounded-2xl bg-white border border-slate-200 focus-within:border-[#0066cc] focus-within:ring-2 focus-within:ring-[#0066cc]/20 transition-all shadow-sm">
+                  <Lock className="w-5 h-5 text-slate-400 shrink-0" />
                   <input
                     type="password"
                     placeholder="••••••••"
                     value={passwordInput}
                     onChange={(e) => setPasswordInput(e.target.value)}
-                    className="w-full pl-12 pr-4 py-3.5 rounded-2xl bg-white border border-slate-200 text-slate-800 placeholder-slate-400 text-sm font-medium focus:outline-none focus:border-[#0066cc] focus:ring-2 focus:ring-[#0066cc]/20 transition-all shadow-sm"
+                    className="w-full bg-transparent border-0 text-slate-800 placeholder-slate-400 text-sm font-medium focus:outline-none"
                   />
                 </div>
                 {authError && (
@@ -2002,19 +2002,7 @@ export default function AdminPage() {
                         onChange={(e) => setEditTeamLogo(e.target.value)}
                         className="w-full px-3 py-2.5 rounded-xl bg-slate-900 border border-white/10 text-xs text-slate-100 focus:outline-none focus:border-blue-400"
                       />
-                      {editTeamLogo && (
-                        <div className="flex items-center gap-3 mt-2">
-                          <img
-                            src={editTeamLogo}
-                            alt="Logo preview"
-                            className="w-10 h-10 rounded-xl bg-slate-800 object-cover border border-white/10"
-                            onError={(e) => {
-                              (e.target as HTMLImageElement).style.display = "none";
-                            }}
-                          />
-                          <span className="text-[10px] text-slate-400">Logo preview</span>
-                        </div>
-                      )}
+
                     </div>
 
                     <div className="flex justify-end gap-2 pt-2">
