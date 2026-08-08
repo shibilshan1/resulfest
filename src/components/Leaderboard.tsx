@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect, useRef } from "react";
 import { Student, Team, Program, Result } from "@/types";
 import { Search, Trophy, Crown, Star, ChevronDown, ArrowLeft, X, Sparkles, User } from "lucide-react";
 
@@ -103,6 +103,94 @@ export function Leaderboard({
   const setShowAllStudents = parentSetShowAllStudents || setLocalShowAllStudents;
   const [expandedStudentId, setExpandedStudentId] = useState<string | null>(null);
   const [expandedCheckStudentId, setExpandedCheckStudentId] = useState<string | null>(null);
+
+  const isPopStateRef = useRef(false);
+  const prevExpandedRef = useRef<string | null>(null);
+  const prevExpandedCheckRef = useRef<string | null>(null);
+
+  // Sync refs
+  useEffect(() => {
+    prevExpandedRef.current = expandedStudentId;
+    prevExpandedCheckRef.current = expandedCheckStudentId;
+  }, [expandedStudentId, expandedCheckStudentId]);
+
+  // Handle popstate for mobile back button in Leaderboard
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+
+    const handlePopState = (e: PopStateEvent) => {
+      isPopStateRef.current = true;
+      const state = e.state;
+
+      if (state) {
+        if (typeof state.expandedStudentId !== "undefined") {
+          setExpandedStudentId(state.expandedStudentId);
+        } else if (prevExpandedRef.current !== null) {
+          setExpandedStudentId(null);
+        }
+
+        if (typeof state.expandedCheckStudentId !== "undefined") {
+          setExpandedCheckStudentId(state.expandedCheckStudentId);
+        } else if (prevExpandedCheckRef.current !== null) {
+          setExpandedCheckStudentId(null);
+        }
+      } else {
+        if (prevExpandedRef.current !== null) {
+          setExpandedStudentId(null);
+        }
+        if (prevExpandedCheckRef.current !== null) {
+          setExpandedCheckStudentId(null);
+        }
+      }
+
+      setTimeout(() => {
+        isPopStateRef.current = false;
+      }, 50);
+    };
+
+    window.addEventListener("popstate", handlePopState);
+    return () => window.removeEventListener("popstate", handlePopState);
+  }, []);
+
+  const handleToggleStudentExpand = (studentId: string) => {
+    const isCurrentlyExpanded = expandedStudentId === studentId;
+    if (isCurrentlyExpanded) {
+      setExpandedStudentId(null);
+    } else {
+      setExpandedStudentId(studentId);
+      if (typeof window !== "undefined" && !isPopStateRef.current) {
+        window.history.pushState(
+          {
+            tab: window.history.state?.tab || "leaderboard",
+            ...window.history.state,
+            expandedStudentId: studentId,
+          },
+          "",
+          window.location.pathname + window.location.search
+        );
+      }
+    }
+  };
+
+  const handleToggleCheckStudentExpand = (studentId: string) => {
+    const isCurrentlyExpanded = expandedCheckStudentId === studentId;
+    if (isCurrentlyExpanded) {
+      setExpandedCheckStudentId(null);
+    } else {
+      setExpandedCheckStudentId(studentId);
+      if (typeof window !== "undefined" && !isPopStateRef.current) {
+        window.history.pushState(
+          {
+            tab: window.history.state?.tab || "leaderboard",
+            ...window.history.state,
+            expandedCheckStudentId: studentId,
+          },
+          "",
+          window.location.pathname + window.location.search
+        );
+      }
+    }
+  };
 
   const filteredStudents = students.filter((s) => {
     const query = searchQuery.toLowerCase().trim();
@@ -426,7 +514,7 @@ export function Leaderboard({
                       cursor: "pointer",
                       animationDelay: `${Math.min(idx * 0.04, 0.5)}s`,
                     }}
-                    onClick={() => setExpandedStudentId(expandedStudentId === stud.id ? null : stud.id)}
+                    onClick={() => handleToggleStudentExpand(stud.id)}
                   >
                     {/* Main row */}
                     <div
@@ -953,7 +1041,7 @@ export function Leaderboard({
                         cursor: "pointer",
                         transition: "all 0.25s ease",
                       }}
-                      onClick={() => setExpandedCheckStudentId(isExpanded ? null : stud.id)}
+                      onClick={() => handleToggleCheckStudentExpand(stud.id)}
                     >
                       {/* Top Row: Avatar, Name, Group & Total Rank/Points */}
                       <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 12, flexWrap: "wrap" }}>

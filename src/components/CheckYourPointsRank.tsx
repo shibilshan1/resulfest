@@ -73,7 +73,7 @@ export function CheckYourPointsRank({
       setExpandedCheckStudentId(studentId);
       if (typeof window !== "undefined" && !isPopStateRef.current) {
         window.history.pushState(
-          { ...window.history.state, checkQuery, checkStudentId: studentId },
+          { tab: window.history.state?.tab || "hero", ...window.history.state, checkQuery, checkStudentId: studentId },
           "",
           window.location.pathname + window.location.search
         );
@@ -85,7 +85,7 @@ export function CheckYourPointsRank({
     const val = e.target.value;
     if (checkQuery === "" && val.trim() !== "" && typeof window !== "undefined" && !isPopStateRef.current) {
       window.history.pushState(
-        { ...window.history.state, checkQuery: val, checkStudentId: null },
+        { tab: window.history.state?.tab || "hero", ...window.history.state, checkQuery: val, checkStudentId: null },
         "",
         window.location.pathname + window.location.search
       );

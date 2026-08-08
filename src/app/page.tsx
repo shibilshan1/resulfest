@@ -18,6 +18,9 @@ interface AppHistoryState {
   showAllPrograms: boolean;
   showAllStudents: boolean;
   expandedProgramId: string | null;
+  expandedStudentId?: string | null;
+  expandedCheckStudentId?: string | null;
+  checkQuery?: string;
 }
 
 export default function Home() {
