@@ -4,6 +4,7 @@ import { useState, useRef, useEffect, useCallback } from "react";
 import { useFestStore } from "@/lib/store";
 import { SUPABASE_SQL_SCHEMA, AVATAR_PRESETS, UNKNOWN_PERSON_AVATAR } from "@/lib/mockData";
 import { Student, Program, Team } from "@/types";
+import { TeamLogoAvatar } from "@/components/TeamLogoAvatar";
 import {
   ShieldCheck,
   Lock,
@@ -279,9 +280,9 @@ export default function AdminPage() {
       return;
     }
 
-    // Validate file size (max 2MB)
-    if (file.size > 2 * 1024 * 1024) {
-      setResultSuccessMsg("❌ Image too large! Max 2MB allowed.");
+    // Validate file size (max 6MB)
+    if (file.size > 6 * 1024 * 1024) {
+      setResultSuccessMsg("❌ Image too large! Max 6MB allowed.");
       setTimeout(() => setResultSuccessMsg(""), 4000);
       return;
     }
@@ -530,7 +531,7 @@ export default function AdminPage() {
     await updateTeam(editingTeam.id, {
       name: editTeamName,
       color: editTeamColor,
-      logo_url: editTeamLogo || `https://api.dicebear.com/7.x/identicon/svg?seed=${encodeURIComponent(editTeamName)}`,
+      logo_url: editTeamLogo ? editTeamLogo.trim() : "",
     });
     setEditingTeam(null);
     setResultSuccessMsg("Team profile updated successfully! ✅");
@@ -1911,10 +1912,10 @@ export default function AdminPage() {
                   style={{ borderLeft: `4px solid ${t.color}` }}
                 >
                   <div className="flex items-center gap-3">
-                    <img
-                      src={t.logo_url}
-                      alt={t.name}
-                      className="w-10 h-10 rounded-xl bg-slate-800 object-cover"
+                    <TeamLogoAvatar
+                      team={t}
+                      size={40}
+                      borderRadius={12}
                     />
                     <div className="flex-1 min-w-0">
                       <h4 className="font-bold text-sm text-slate-100 truncate">{t.name}</h4>
@@ -2115,7 +2116,7 @@ export default function AdminPage() {
                         <span>Click to Upload Photo from Device</span>
                       </button>
                     )}
-                    <p className="text-[10px] text-slate-500">Supports JPG, PNG, GIF, WebP (max 2MB)</p>
+                    <p className="text-[10px] text-slate-500">Supports JPG, PNG, GIF, WebP (max 6MB)</p>
                   </div>
                   
                   {/* Avatar Presets */}
@@ -2234,8 +2235,8 @@ export default function AdminPage() {
                                 setTimeout(() => setResultSuccessMsg(""), 3000);
                                 return;
                               }
-                              if (file.size > 2 * 1024 * 1024) {
-                                setResultSuccessMsg("❌ Image too large! Max 2MB");
+                              if (file.size > 6 * 1024 * 1024) {
+                                setResultSuccessMsg("❌ Image too large! Max 6MB");
                                 setTimeout(() => setResultSuccessMsg(""), 3000);
                                 return;
                               }
@@ -2426,7 +2427,7 @@ export default function AdminPage() {
                             <span>Click to Upload Photo from Device</span>
                           </button>
                         )}
-                        <p className="text-[10px] text-slate-500">Supports JPG, PNG, GIF, WebP (max 2MB)</p>
+                        <p className="text-[10px] text-slate-500">Supports JPG, PNG, GIF, WebP (max 6MB)</p>
                       </div>
 
                       {/* Current Photo Preview */}

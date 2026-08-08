@@ -3,6 +3,7 @@
 import { Team, Student, Program, Result } from "@/types";
 import { X, Award, Users, Trophy, ArrowLeft } from "lucide-react";
 import { StudentAvatar } from "./Leaderboard";
+import { TeamLogoAvatar } from "@/components/TeamLogoAvatar";
 
 interface TeamDetailModalProps {
   team: Team | null;
@@ -84,16 +85,12 @@ export function TeamDetailModal({
           }}
         >
           <div style={{ display: "flex", alignItems: "center", gap: 14 }}>
-            <img
-              src={team.logo_url}
-              alt={team.name}
+            <TeamLogoAvatar
+              team={team}
+              size={60}
+              borderRadius={14}
               style={{
-                width: 60,
-                height: 60,
-                borderRadius: 14,
-                objectFit: "cover",
                 border: "3px solid rgba(255,255,255,0.4)",
-                background: "rgba(255,255,255,0.1)",
               }}
             />
             <div>

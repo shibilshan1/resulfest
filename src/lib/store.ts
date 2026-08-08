@@ -59,25 +59,21 @@ export function useFestStore() {
     // Helper to normalize team branding
     const normalizeTeam = (t: Team): Team => {
       let name = t.name;
-      let color = t.color;
-      let logo_url = t.logo_url;
+      let color = t.color || "#3B82F6";
+      let logo_url = t.logo_url || "";
 
       if (t.id === "team-a" || t.name.toLowerCase().includes("group a") || t.name.toLowerCase().includes("quba")) {
-        name = "QUBA";
-        color = "#FFFFFF";
-        logo_url = "https://api.dicebear.com/7.x/identicon/svg?seed=QUBA";
+        name = t.name || "QUBA";
+        color = t.color || "#FFFFFF";
       } else if (t.id === "team-b" || t.name.toLowerCase().includes("group b") || t.name.toLowerCase().includes("juhfa")) {
-        name = "JUHFA";
-        color = "#38BDF8";
-        logo_url = "https://api.dicebear.com/7.x/identicon/svg?seed=JUHFA";
+        name = t.name || "JUHFA";
+        color = t.color || "#38BDF8";
       } else if (t.id === "team-c" || t.name.toLowerCase().includes("group c") || t.name.toLowerCase().includes("khudyd")) {
-        name = "KHUDYD";
-        color = "#EF4444";
-        logo_url = "https://api.dicebear.com/7.x/identicon/svg?seed=KHUDYD";
+        name = t.name || "KHUDYD";
+        color = t.color || "#EF4444";
       } else if (t.id === "team-d" || t.name.toLowerCase().includes("group d") || t.name.toLowerCase().includes("thawr")) {
-        name = "THAWR";
-        color = "#10B981";
-        logo_url = "https://api.dicebear.com/7.x/identicon/svg?seed=THAWR";
+        name = t.name || "THAWR";
+        color = t.color || "#10B981";
       }
 
       return { ...t, name, color, logo_url };
@@ -213,25 +209,21 @@ export function useFestStore() {
 
     const computedTeams: Team[] = rawTeams.map((t) => {
       let name = t.name;
-      let color = t.color;
-      let logo_url = t.logo_url;
+      let color = t.color || "#3B82F6";
+      let logo_url = t.logo_url || "";
 
       if (t.id === "team-a" || t.name.toLowerCase().includes("group a") || t.name.toLowerCase().includes("quba")) {
-        name = "QUBA";
-        color = "#FFFFFF";
-        logo_url = "https://api.dicebear.com/7.x/identicon/svg?seed=QUBA";
+        name = t.name || "QUBA";
+        color = t.color || "#FFFFFF";
       } else if (t.id === "team-b" || t.name.toLowerCase().includes("group b") || t.name.toLowerCase().includes("juhfa")) {
-        name = "JUHFA";
-        color = "#38BDF8";
-        logo_url = "https://api.dicebear.com/7.x/identicon/svg?seed=JUHFA";
+        name = t.name || "JUHFA";
+        color = t.color || "#38BDF8";
       } else if (t.id === "team-c" || t.name.toLowerCase().includes("group c") || t.name.toLowerCase().includes("khudyd")) {
-        name = "KHUDYD";
-        color = "#EF4444";
-        logo_url = "https://api.dicebear.com/7.x/identicon/svg?seed=KHUDYD";
+        name = t.name || "KHUDYD";
+        color = t.color || "#EF4444";
       } else if (t.id === "team-d" || t.name.toLowerCase().includes("group d") || t.name.toLowerCase().includes("thawr")) {
-        name = "THAWR";
-        color = "#10B981";
-        logo_url = "https://api.dicebear.com/7.x/identicon/svg?seed=THAWR";
+        name = t.name || "THAWR";
+        color = t.color || "#10B981";
       }
 
       return {
@@ -405,7 +397,7 @@ export function useFestStore() {
       id: teamId,
       name,
       color,
-      logo_url: logo_url || `https://api.dicebear.com/7.x/identicon/svg?seed=${encodeURIComponent(name)}`,
+      logo_url: logo_url || "",
       total_score: 0,
     };
 

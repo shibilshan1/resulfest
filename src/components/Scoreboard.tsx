@@ -2,6 +2,7 @@
 
 import { Team, ScoreProgressionPoint } from "@/types";
 import { Trophy, TrendingUp, ChevronRight, ArrowUpRight } from "lucide-react";
+import { TeamLogoAvatar } from "@/components/TeamLogoAvatar";
 import { TeamHorizontalBarChart, getTeamStyling } from "@/components/TeamHorizontalBarChart";
 import {
   LineChart,
@@ -108,18 +109,11 @@ export function Scoreboard({ teams, scoreProgression, onSelectTeam }: Scoreboard
 
                 {/* Logo + Rank */}
                 <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
-                  <img
-                    src={team.logo_url}
-                    alt={team.name}
-                    style={{
-                      width: 44,
-                      height: 44,
-                      borderRadius: 12,
-                      objectFit: "cover",
-                      border: `2px solid ${styling.border}`,
-                      background: "#FFF",
-                      flexShrink: 0,
-                    }}
+                  <TeamLogoAvatar
+                    team={team}
+                    size={44}
+                    borderRadius={12}
+                    style={{ border: `2px solid ${styling.border}` }}
                   />
                   <div style={{ minWidth: 0 }}>
                     <p style={{

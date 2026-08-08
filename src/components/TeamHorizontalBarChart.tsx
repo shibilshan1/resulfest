@@ -3,6 +3,7 @@
 import { useState, useEffect } from "react";
 import { Team } from "@/types";
 import { BarChart2 } from "lucide-react";
+import { TeamLogoAvatar } from "@/components/TeamLogoAvatar";
 
 interface TeamHorizontalBarChartProps {
   teams: Team[];
@@ -204,18 +205,11 @@ export function TeamHorizontalBarChart({ teams, onSelectTeam }: TeamHorizontalBa
                 </div>
 
                 {/* Logo */}
-                <img
-                  src={team.logo_url}
-                  alt={team.name}
-                  style={{
-                    width: 36,
-                    height: 36,
-                    borderRadius: 10,
-                    objectFit: "cover",
-                    border: `2px solid ${styling.text}40`,
-                    background: "#FFF",
-                    flexShrink: 0,
-                  }}
+                <TeamLogoAvatar
+                  team={team}
+                  size={36}
+                  borderRadius={10}
+                  style={{ border: `2px solid ${styling.text}40` }}
                 />
 
                 {/* Name */}

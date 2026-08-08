@@ -15,28 +15,24 @@ export const INITIAL_TEAMS: Team[] = [
     id: "team-a",
     name: "QUBA",
     color: "#FFFFFF", // White
-    logo_url: "https://api.dicebear.com/7.x/identicon/svg?seed=QUBA",
     total_score: 0,
   },
   {
     id: "team-b",
     name: "JUHFA",
     color: "#38BDF8", // Sky Blue
-    logo_url: "https://api.dicebear.com/7.x/identicon/svg?seed=JUHFA",
     total_score: 0,
   },
   {
     id: "team-c",
     name: "KHUDYD",
     color: "#EF4444", // Red
-    logo_url: "https://api.dicebear.com/7.x/identicon/svg?seed=KHUDYD",
     total_score: 0,
   },
   {
     id: "team-d",
     name: "THAWR",
     color: "#10B981", // Green
-    logo_url: "https://api.dicebear.com/7.x/identicon/svg?seed=THAWR",
     total_score: 0,
   },
 ];
