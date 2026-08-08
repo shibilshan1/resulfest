@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect, useRef } from "react";
 import { Student, Team, Program, Result } from "@/types";
 import { Search, Trophy, Sparkles, ChevronDown, X } from "lucide-react";
 import { StudentAvatar } from "./Leaderboard";
@@ -20,6 +20,86 @@ export function CheckYourPointsRank({
 }: CheckYourPointsRankProps) {
   const [checkQuery, setCheckQuery] = useState("");
   const [expandedCheckStudentId, setExpandedCheckStudentId] = useState<string | null>(null);
+
+  const isPopStateRef = useRef(false);
+  const prevQueryRef = useRef("");
+  const prevExpandedRef = useRef<string | null>(null);
+
+  // Sync refs
+  useEffect(() => {
+    prevQueryRef.current = checkQuery;
+    prevExpandedRef.current = expandedCheckStudentId;
+  }, [checkQuery, expandedCheckStudentId]);
+
+  // Handle popstate for mobile back button
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+
+    const handlePopState = (e: PopStateEvent) => {
+      isPopStateRef.current = true;
+      const state = e.state;
+
+      if (state && typeof state.checkStudentId !== "undefined") {
+        setExpandedCheckStudentId(state.checkStudentId);
+        if (typeof state.checkQuery !== "undefined") {
+          setCheckQuery(state.checkQuery);
+        }
+      } else if (state && typeof state.checkQuery !== "undefined") {
+        setExpandedCheckStudentId(null);
+        setCheckQuery(state.checkQuery);
+      } else {
+        // Fallback: If user hits mobile back while student status is expanded, collapse details. If search query was active, clear search.
+        if (prevExpandedRef.current !== null) {
+          setExpandedCheckStudentId(null);
+        } else if (prevQueryRef.current !== "") {
+          setCheckQuery("");
+        }
+      }
+
+      setTimeout(() => {
+        isPopStateRef.current = false;
+      }, 50);
+    };
+
+    window.addEventListener("popstate", handlePopState);
+    return () => window.removeEventListener("popstate", handlePopState);
+  }, []);
+
+  const handleToggleExpand = (studentId: string) => {
+    const isCurrentlyExpanded = expandedCheckStudentId === studentId;
+    if (isCurrentlyExpanded) {
+      setExpandedCheckStudentId(null);
+    } else {
+      setExpandedCheckStudentId(studentId);
+      if (typeof window !== "undefined" && !isPopStateRef.current) {
+        window.history.pushState(
+          { ...window.history.state, checkQuery, checkStudentId: studentId },
+          "",
+          window.location.pathname + window.location.search
+        );
+      }
+    }
+  };
+
+  const handleQueryInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const val = e.target.value;
+    if (checkQuery === "" && val.trim() !== "" && typeof window !== "undefined" && !isPopStateRef.current) {
+      window.history.pushState(
+        { ...window.history.state, checkQuery: val, checkStudentId: null },
+        "",
+        window.location.pathname + window.location.search
+      );
+    }
+    setCheckQuery(val);
+    if (val.trim() === "") {
+      setExpandedCheckStudentId(null);
+    }
+  };
+
+  const handleClearQuery = () => {
+    setCheckQuery("");
+    setExpandedCheckStudentId(null);
+  };
 
   const getTeam = (teamId: string) => teams.find((t) => t.id === teamId);
 
@@ -117,7 +197,7 @@ export function CheckYourPointsRank({
               type="text"
               placeholder="Chest no. or name..."
               value={checkQuery}
-              onChange={(e) => setCheckQuery(e.target.value)}
+              onChange={handleQueryInputChange}
               style={{
                 width: "100%",
                 padding: "5px 26px 5px 28px",
@@ -135,7 +215,7 @@ export function CheckYourPointsRank({
 
             {checkQuery.trim() !== "" && (
               <button
-                onClick={() => setCheckQuery("")}
+                onClick={handleClearQuery}
                 style={{
                   position: "absolute",
                   right: 10,
@@ -200,7 +280,7 @@ export function CheckYourPointsRank({
                         cursor: "pointer",
                         transition: "all 0.25s ease",
                       }}
-                      onClick={() => setExpandedCheckStudentId(isExpanded ? null : stud.id)}
+                      onClick={() => handleToggleExpand(stud.id)}
                     >
                       {/* Top Row */}
                       <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 12, flexWrap: "wrap" }}>
