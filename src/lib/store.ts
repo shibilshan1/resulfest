@@ -617,7 +617,7 @@ export function useFestStore() {
       });
 
       const point: ScoreProgressionPoint = {
-        program: prog.name.length > 18 ? prog.name.slice(0, 15) + "..." : prog.name,
+        program: prog.name,
       };
       teams.forEach((t) => {
         point[t.name] = runningScores[t.name] || 0;

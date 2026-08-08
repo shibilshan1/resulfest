@@ -125,7 +125,7 @@ export function Scoreboard({ teams, scoreProgression, onSelectTeam }: Scoreboard
                     </p>
                     <h3 style={{
                       fontWeight: 900, fontSize: 14, color: "#111827",
-                      whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis",
+                      wordBreak: "break-word", lineHeight: 1.25,
                     }}>
                       {team.name}
                     </h3>

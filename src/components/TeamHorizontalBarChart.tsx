@@ -219,9 +219,8 @@ export function TeamHorizontalBarChart({ teams, onSelectTeam }: TeamHorizontalBa
                       fontSize: 13,
                       fontWeight: 800,
                       color: "#111827",
-                      whiteSpace: "nowrap",
-                      overflow: "hidden",
-                      textOverflow: "ellipsis",
+                      wordBreak: "break-word",
+                      lineHeight: 1.25,
                     }}
                   >
                     {team.name}
