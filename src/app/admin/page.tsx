@@ -20,6 +20,7 @@ import {
   Check,
   LogOut,
   ArrowLeft,
+  ArrowRight,
   Zap,
   Edit,
   UserCheck,
@@ -545,60 +546,89 @@ export default function AdminPage() {
   // Password Gate Screen
   if (!isAuthenticated) {
     return (
-      <div className="min-h-screen w-full flex items-center justify-center p-4 bg-sand-to-cool-blue">
-        <div className="glass-card w-full max-w-md rounded-3xl p-8 space-y-6 shadow-2xl border border-amber-500/30">
-          <div className="text-center space-y-2">
-            <div className="w-14 h-14 rounded-2xl bg-gradient-to-tr from-amber-500 to-red-600 mx-auto flex items-center justify-center text-white shadow-lg">
-              <ShieldCheck className="w-8 h-8" />
+      <div className="min-h-screen w-full flex flex-col justify-between items-center p-4 bg-[#f6f8fc]">
+        <div className="w-full max-w-md my-auto space-y-6">
+          {/* Main Login Card */}
+          <div className="bg-white rounded-3xl p-8 sm:p-10 shadow-xl border border-slate-100/80 text-slate-800 space-y-6">
+            {/* Logo */}
+            <div className="w-24 h-24 rounded-full mx-auto p-1.5 flex items-center justify-center bg-white shadow-md border border-slate-100">
+              <img
+                src="/logo.png"
+                alt="Kizil Elma 2k26"
+                className="w-full h-full object-contain rounded-full"
+              />
             </div>
-            <h1 className="font-serif-title text-2xl font-extrabold text-white">
-              Admin Portal
-            </h1>
-            <p className="text-xs text-slate-300">
-              Enter admin password to manage Kizil Elma fest scores.
-            </p>
-          </div>
 
-          <form onSubmit={handleLogin} className="space-y-4">
-            <div>
-              <label className="text-xs font-semibold text-amber-200 block mb-1.5">
-                Admin Password
-              </label>
-              <div className="relative">
-                <Lock className="w-4 h-4 text-slate-400 absolute left-3.5 top-1/2 -translate-y-1/2" />
-                <input
-                  type="password"
-                  placeholder="Enter password..."
-                  value={passwordInput}
-                  onChange={(e) => setPasswordInput(e.target.value)}
-                  className="w-full pl-10 pr-4 py-3 rounded-xl bg-slate-900/90 border border-white/15 text-sm text-slate-100 placeholder-slate-500 focus:outline-none focus:border-amber-400"
-                />
+            {/* Header */}
+            <div className="text-center">
+              <h1 className="text-3xl font-extrabold text-[#0066cc] tracking-tight">
+                Kizil Elma 2k26
+              </h1>
+              <p className="text-lg font-bold text-slate-700 mt-1">
+                Admin Portal
+              </p>
+            </div>
+
+            {/* Login Form */}
+            <form onSubmit={handleLogin} className="space-y-6 pt-2">
+              <div>
+                <div className="flex items-center justify-between mb-2">
+                  <label className="text-sm font-bold text-slate-700">
+                    Password
+                  </label>
+                  <span className="text-xs font-semibold text-[#0066cc] hover:underline cursor-pointer">
+                    Forgot Password?
+                  </span>
+                </div>
+                <div className="relative flex items-center">
+                  <Lock className="w-5 h-5 text-slate-400 absolute left-4 pointer-events-none" />
+                  <input
+                    type="password"
+                    placeholder="••••••••"
+                    value={passwordInput}
+                    onChange={(e) => setPasswordInput(e.target.value)}
+                    className="w-full pl-12 pr-4 py-3.5 rounded-2xl bg-white border border-slate-200 text-slate-800 placeholder-slate-400 text-sm font-medium focus:outline-none focus:border-[#0066cc] focus:ring-2 focus:ring-[#0066cc]/20 transition-all shadow-sm"
+                  />
+                </div>
+                {authError && (
+                  <p className="text-xs text-red-500 font-semibold mt-2">
+                    Incorrect password. Please try again.
+                  </p>
+                )}
               </div>
-              {authError && (
-                <p className="text-xs text-red-400 font-semibold mt-1.5">
-                  Incorrect password. (Default: admin2026)
-                </p>
-              )}
+
+              <button
+                type="submit"
+                className="w-full py-4 rounded-full bg-[#0066cc] hover:bg-blue-700 text-white font-bold text-base transition-all shadow-lg shadow-blue-600/25 flex items-center justify-center gap-2 active:scale-98"
+              >
+                <span>Sign In</span>
+                <ArrowRight className="w-5 h-5" />
+              </button>
+            </form>
+
+            <div className="text-center pt-2">
+              <Link
+                href="/"
+                className="text-xs font-semibold text-slate-500 hover:text-[#0066cc] inline-flex items-center gap-1.5 transition-colors"
+              >
+                <ArrowLeft className="w-3.5 h-3.5" />
+                <span>Back to Public Scoreboard</span>
+              </Link>
             </div>
-
-            <button
-              type="submit"
-              className="w-full py-3 rounded-xl bg-gradient-to-r from-amber-500 to-orange-500 text-slate-950 font-bold text-sm hover:from-amber-400 hover:to-orange-400 transition-all shadow-lg shadow-amber-500/20"
-            >
-              Unlock Admin Panel
-            </button>
-          </form>
-
-          <div className="text-center pt-2">
-            <Link
-              href="/"
-              className="text-xs text-slate-400 hover:text-amber-300 inline-flex items-center gap-1 transition-colors"
-            >
-              <ArrowLeft className="w-3.5 h-3.5" />
-              <span>Back to Public Scoreboard</span>
-            </Link>
           </div>
         </div>
+
+        {/* Footer */}
+        <footer className="w-full text-center py-4 space-y-2 text-slate-400 text-xs">
+          <p>© 2026 Kizil Elma Talent Meet. All rights reserved.</p>
+          <div className="flex flex-wrap items-center justify-center gap-4 text-slate-500 font-medium">
+            <span className="hover:underline cursor-pointer">Privacy Policy</span>
+            <span>•</span>
+            <span className="hover:underline cursor-pointer">Terms of Service</span>
+            <span>•</span>
+            <span className="hover:underline cursor-pointer">Support</span>
+          </div>
+        </footer>
       </div>
     );
   }

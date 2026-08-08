@@ -46,7 +46,7 @@ export function CheckYourPointsRank({
           .sort((a, b) => b.total_points - a.total_points);
 
   return (
-    <section style={{ width: "100%", maxWidth: "70%", padding: "6px 8px 2px", margin: "0 auto", boxSizing: "border-box" }}>
+    <section style={{ width: "100%", maxWidth: "100%", padding: "4px 8px 2px", margin: "0 auto", boxSizing: "border-box" }}>
       {/* ── Compact Curved Optical Bar ── */}
       <div
         id="check-points"

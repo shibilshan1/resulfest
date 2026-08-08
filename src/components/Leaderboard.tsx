@@ -760,9 +760,9 @@ export function Leaderboard({
       <div
         id="check-points"
         style={{
-          maxWidth: "70%",
-          margin: "36px auto 0",
-          padding: "24px",
+          maxWidth: 680,
+          margin: "24px auto 0",
+          padding: "16px 20px",
           borderRadius: 24,
           background: "linear-gradient(135deg, #0F172A 0%, #1E1B4B 45%, #1A56DB 100%)",
           color: "#fff",

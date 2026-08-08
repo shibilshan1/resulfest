@@ -21,7 +21,7 @@ export function Navbar({ activeTab, setActiveTab }: NavbarProps) {
     { id: "hero",        label: "Home",        icon: Home },
     { id: "scoreboard",  label: "Scoreboard",  icon: Trophy },
     { id: "results",     label: "Events",      icon: CalendarDays },
-    { id: "leaderboard", label: "Search",      icon: Search },
+    { id: "check-points", label: "Search",      icon: Search },
   ];
 
   return (
