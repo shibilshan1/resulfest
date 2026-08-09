@@ -352,23 +352,89 @@ export function Leaderboard({
         </h2>
       </div>
 
-      {/* ── Category & Grade Quick Filters ── */}
-      <div style={{ textAlign: "center", display: "flex", flexDirection: "column", alignItems: "center", gap: 8 }}>
+      {/* ── Category & Team Group Quick Filters ── */}
+      <div style={{ textAlign: "center", display: "flex", flexDirection: "column", alignItems: "center", gap: 10 }}>
         <div style={{ display: "flex", alignItems: "center", gap: 5, fontSize: 11, fontWeight: 800, color: "#4B5563", textTransform: "uppercase", letterSpacing: "0.07em" }}>
-          <Filter className="w-3 h-3 text-[#1A56DB]" />
-          <span>Top Score Category Filter</span>
+          <Filter className="w-3.5 h-3.5 text-[#1A56DB]" />
+          <span>Individual Leaderboard Filter</span>
         </div>
-        <div style={{ display: "flex", flexWrap: "wrap", gap: 8, justifyContent: "center" }}>
+
+        {/* Unified Filter Pills */}
+        <div style={{ display: "flex", flexWrap: "wrap", gap: 8, justifyContent: "center", maxWidth: 640 }}>
+          {/* All Groups */}
+          <button
+            onClick={() => {
+              setSelectedTeamFilter("All");
+              setSelectedCategoryFilter("All");
+            }}
+            className={`filter-chip${selectedTeamFilter === "All" && selectedCategoryFilter === "All" ? " active" : ""}`}
+            style={
+              selectedTeamFilter === "All" && selectedCategoryFilter === "All"
+                ? {
+                    background: "linear-gradient(135deg, #1A56DB 0%, #1D4ED8 100%)",
+                    color: "#ffffff",
+                    borderColor: "#1E40AF",
+                    fontWeight: 800,
+                    boxShadow: "0 4px 12px rgba(26, 86, 219, 0.3)",
+                  }
+                : {}
+            }
+          >
+            🏆 All Groups
+          </button>
+
+          {/* Team Group Pills: Quba, Juhfa, Khudyd, Thawr */}
+          {teams.map((t) => {
+            const isActive = selectedTeamFilter === t.id && selectedCategoryFilter === "All";
+            return (
+              <button
+                key={t.id}
+                onClick={() => {
+                  setSelectedTeamFilter(t.id);
+                  setSelectedCategoryFilter("All");
+                }}
+                className={`filter-chip${isActive ? " active" : ""}`}
+                style={
+                  isActive
+                    ? {
+                        background: t.color && t.color !== "#FFFFFF" ? t.color : "#1A56DB",
+                        color: "#ffffff",
+                        borderColor: t.color || "#1E40AF",
+                        fontWeight: 800,
+                        boxShadow: "0 4px 12px rgba(0, 0, 0, 0.2)",
+                      }
+                    : {}
+                }
+              >
+                <span
+                  style={{
+                    display: "inline-block",
+                    width: 8,
+                    height: 8,
+                    borderRadius: "50%",
+                    background: t.color || "#1A56DB",
+                    marginRight: 6,
+                    border: "1px solid rgba(255,255,255,0.6)",
+                  }}
+                />
+                {t.name}
+              </button>
+            );
+          })}
+
+          {/* Category/Grade Pills: Bakalooria & Sanaviyya */}
           {[
-            { id: "All", label: "🏆 All Groups" },
             { id: "Bakalooria", label: "🎓 Bakalooria" },
             { id: "Sanaviyya", label: "📖 Sanaviyya" },
           ].map((cat) => {
-            const isActive = selectedCategoryFilter === cat.id;
+            const isActive = selectedCategoryFilter === cat.id && selectedTeamFilter === "All";
             return (
               <button
                 key={cat.id}
-                onClick={() => setSelectedCategoryFilter(cat.id)}
+                onClick={() => {
+                  setSelectedCategoryFilter(cat.id);
+                  setSelectedTeamFilter("All");
+                }}
                 className={`filter-chip${isActive ? " active" : ""}`}
                 style={
                   isActive
@@ -387,24 +453,6 @@ export function Leaderboard({
             );
           })}
         </div>
-      </div>
-
-      {/* Team Filter Chips */}
-      <div style={{ display: "flex", flexWrap: "wrap", gap: 8, justifyContent: "center" }}>
-        {["All", ...teams.map((t) => t.id)].map((filterId) => {
-          const teamObj = teams.find((t) => t.id === filterId);
-          const label = filterId === "All" ? "All Groups" : (teamObj?.name ?? filterId);
-          const isActive = selectedTeamFilter === filterId;
-          return (
-            <button
-              key={filterId}
-              onClick={() => setSelectedTeamFilter(filterId)}
-              className={`filter-chip${isActive ? " active" : ""}`}
-            >
-              {label}
-            </button>
-          );
-        })}
       </div>
 
 

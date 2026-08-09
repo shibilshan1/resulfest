@@ -31,17 +31,23 @@ export function LiveResultPopup({
     (r) => r.student_id && (r.points_awarded || 0) > 0
   );
 
-  // Cycle through all student results one by one every 1 second (1000ms)
+  // Play through all student results ONCE ONLY (1 second per student)
   useEffect(() => {
-    if (validResults.length <= 1 || isDismissed) return;
+    if (validResults.length === 0 || isDismissed) return;
 
     const timer = setInterval(() => {
       setIsAnimating(true);
       setTimeout(() => {
-        setCurrentIndex((prev) => (prev + 1) % validResults.length);
+        setCurrentIndex((prev) => {
+          if (prev >= validResults.length - 1) {
+            setIsDismissed(true);
+            return prev;
+          }
+          return prev + 1;
+        });
         setIsAnimating(false);
       }, 150);
-    }, 1000); // Only 1 second per student as requested
+    }, 1000); // 1 second per student
 
     return () => clearInterval(timer);
   }, [validResults.length, isDismissed]);
