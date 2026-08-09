@@ -297,3 +297,34 @@ CREATE POLICY "Admin Full Access" ON students FOR ALL USING (true);
 CREATE POLICY "Admin Full Access" ON programs FOR ALL USING (true);
 CREATE POLICY "Admin Full Access" ON results FOR ALL USING (true);
 `;
+
+export const INITIAL_SLIDESHOW_IMAGES = [
+  {
+    id: "slide-1",
+    image_url: "https://images.unsplash.com/photo-1511578314322-379afb476865?q=80&w=1200&auto=format&fit=crop",
+    title: "Grand Inauguration Ceremony",
+    subtitle: "Kizil Elma 2K26 Stage Performances",
+    category: "Stage",
+  },
+  {
+    id: "slide-2",
+    image_url: "https://images.unsplash.com/photo-1475721027785-f74eccf877e2?q=80&w=1200&auto=format&fit=crop",
+    title: "Inspiring Speech & Debates",
+    subtitle: "Sanaviyya & Bakalooria Highlights",
+    category: "Stage",
+  },
+  {
+    id: "slide-3",
+    image_url: "https://images.unsplash.com/photo-1501386761578-eac5c94b800a?q=80&w=1200&auto=format&fit=crop",
+    title: "Championship Award Night",
+    subtitle: "Trophy Presentation & Team Honors",
+    category: "Off-Stage",
+  },
+  {
+    id: "slide-4",
+    image_url: "https://images.unsplash.com/photo-1492684223066-81342ee5ff30?q=80&w=1200&auto=format&fit=crop",
+    title: "Cultural Extravaganza",
+    subtitle: "Moments of Unity and Excellence",
+    category: "General",
+  },
+];

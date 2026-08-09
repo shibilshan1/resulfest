@@ -47,7 +47,7 @@ export default function AdminPage() {
   const [passwordInput, setPasswordInput] = useState("");
   const [authError, setAuthError] = useState(false);
   const [activeAdminTab, setActiveAdminTab] = useState<
-    "results" | "quickscore" | "programs" | "teams" | "students" | "settings"
+    "results" | "quickscore" | "programs" | "teams" | "students" | "slideshow" | "settings"
   >("results");
   const [copiedSql, setCopiedSql] = useState(false);
 
@@ -56,6 +56,7 @@ export default function AdminPage() {
     students,
     programs,
     results,
+    slideshowImages,
     addOrUpdateResult,
     saveProgramResults,
     addQuickScore,
@@ -69,9 +70,23 @@ export default function AdminPage() {
     updateProgram,
     deleteProgram,
     updateTeam,
+    addSlideshowImage,
+    updateSlideshowImage,
+    deleteSlideshowImage,
     resetAllPointsToZero,
     resetToDemoData,
   } = useFestStore();
+
+  // Slideshow Manager State
+  const [slideImageUrl, setSlideImageUrl] = useState("");
+  const [slideTitle, setSlideTitle] = useState("");
+  const [slideSubtitle, setSlideSubtitle] = useState("");
+  const [slideCategory, setSlideCategory] = useState("Stage");
+  const [editingSlideId, setEditingSlideId] = useState<string | null>(null);
+  const [isSlideModalOpen, setIsSlideModalOpen] = useState(false);
+  const [deletingSlideId, setDeletingSlideId] = useState<string | null>(null);
+  const [slideFileName, setSlideFileName] = useState("");
+  const slideFileInputRef = useRef<HTMLInputElement>(null);
 
   // Edit Result state
   const [editingResultId, setEditingResultId] = useState<string | null>(null);
@@ -258,10 +273,69 @@ export default function AdminPage() {
     return () => window.removeEventListener("popstate", handlePopState);
   }, [isAuthenticated]);
 
-  const changeAdminTab = (tab: "results" | "quickscore" | "programs" | "teams" | "students" | "settings") => {
+  const changeAdminTab = (tab: "results" | "quickscore" | "programs" | "teams" | "students" | "slideshow" | "settings") => {
     setActiveAdminTab(tab);
     setEditingStudent(null);
     pushAdminState(tab, null);
+  };
+
+  // Slideshow Handlers
+  const handleOpenAddSlide = () => {
+    setEditingSlideId(null);
+    setSlideImageUrl("");
+    setSlideTitle("");
+    setSlideSubtitle("");
+    setSlideCategory("Stage");
+    setSlideFileName("");
+    setIsSlideModalOpen(true);
+  };
+
+  const handleOpenEditSlide = (slide: { id: string; image_url: string; title?: string; subtitle?: string; category?: string }) => {
+    setEditingSlideId(slide.id);
+    setSlideImageUrl(slide.image_url);
+    setSlideTitle(slide.title || "");
+    setSlideSubtitle(slide.subtitle || "");
+    setSlideCategory(slide.category || "Stage");
+    setSlideFileName("");
+    setIsSlideModalOpen(true);
+  };
+
+  const handleSaveSlide = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!slideImageUrl.trim()) {
+      setResultSuccessMsg("❌ Please select or paste an image URL!");
+      setTimeout(() => setResultSuccessMsg(""), 3000);
+      return;
+    }
+
+    if (editingSlideId) {
+      await updateSlideshowImage(editingSlideId, {
+        image_url: slideImageUrl.trim(),
+        title: slideTitle.trim(),
+        subtitle: slideSubtitle.trim(),
+        category: slideCategory,
+      });
+      setResultSuccessMsg("Slide image updated successfully! 📸");
+    } else {
+      await addSlideshowImage({
+        image_url: slideImageUrl.trim(),
+        title: slideTitle.trim(),
+        subtitle: slideSubtitle.trim(),
+        category: slideCategory,
+      });
+      setResultSuccessMsg("New slide image added successfully! 📸");
+    }
+
+    setIsSlideModalOpen(false);
+    setTimeout(() => setResultSuccessMsg(""), 4000);
+  };
+
+  const handleConfirmDeleteSlide = async () => {
+    if (!deletingSlideId) return;
+    await deleteSlideshowImage(deletingSlideId);
+    setDeletingSlideId(null);
+    setResultSuccessMsg("Slide image removed successfully! 🗑️");
+    setTimeout(() => setResultSuccessMsg(""), 4000);
   };
 
   // Handle file upload -> base64 conversion
@@ -740,6 +814,18 @@ export default function AdminPage() {
           >
             <Users className="w-4 h-4" />
             <span>Students ({students.length})</span>
+          </button>
+
+          <button
+            onClick={() => changeAdminTab("slideshow")}
+            className={`px-4 py-2 rounded-xl text-xs font-bold transition-all flex items-center gap-2 shrink-0 ${
+              activeAdminTab === "slideshow"
+                ? "bg-amber-500 text-slate-950 shadow-md"
+                : "bg-slate-900 text-slate-300 hover:text-white"
+            }`}
+          >
+            <ImageIcon className="w-4 h-4" />
+            <span>Image Slideshow ({slideshowImages.length})</span>
           </button>
 
           <button
@@ -2540,7 +2626,281 @@ export default function AdminPage() {
           </div>
         )}
 
-        {/* TAB 6: Settings & Zero Reset */}
+        {/* TAB 6: Image Slideshow & Gallery Manager */}
+        {activeAdminTab === "slideshow" && (
+          <div className="space-y-6">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 glass-card p-5 rounded-2xl border border-white/10">
+              <div>
+                <h2 className="text-lg font-bold text-slate-100 flex items-center gap-2">
+                  <ImageIcon className="w-5 h-5 text-amber-400" />
+                  Image Slideshow & Gallery Manager
+                </h2>
+                <p className="text-xs text-slate-400 mt-1">
+                  Manage the Apple-style curved boxy image carousel (2-second auto-slide) shown on the homepage
+                </p>
+              </div>
+
+              <button
+                onClick={handleOpenAddSlide}
+                className="px-4 py-2.5 rounded-xl bg-amber-500 hover:bg-amber-400 text-slate-950 font-bold text-xs flex items-center justify-center gap-2 transition-all shadow-md active:scale-95 shrink-0"
+              >
+                <Plus className="w-4 h-4" />
+                <span>Add New Slide Image</span>
+              </button>
+            </div>
+
+            {/* Slides Grid */}
+            {slideshowImages.length > 0 ? (
+              <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
+                {slideshowImages.map((slide, idx) => (
+                  <div
+                    key={slide.id || idx}
+                    className="glass-card rounded-2xl p-4 space-y-3 border border-white/10 hover:border-amber-400/50 transition-all flex flex-col justify-between"
+                  >
+                    <div className="space-y-3">
+                      {/* Curved Image Thumbnail */}
+                      <div className="relative aspect-[16/10] rounded-xl overflow-hidden bg-slate-900 border border-white/10">
+                        <img
+                          src={slide.image_url}
+                          alt={slide.title || "Slide"}
+                          className="w-full h-full object-cover"
+                        />
+                        {slide.category && (
+                          <span className="absolute top-2 left-2 px-2.5 py-0.5 rounded-full bg-black/60 backdrop-blur-sm text-white font-extrabold text-[10px] uppercase border border-white/20">
+                            {slide.category}
+                          </span>
+                        )}
+                      </div>
+
+                      {/* Content */}
+                      <div>
+                        <h4 className="text-sm font-bold text-slate-100 truncate">
+                          {slide.title || "Untitled Slide"}
+                        </h4>
+                        {slide.subtitle && (
+                          <p className="text-xs text-slate-400 truncate mt-0.5">
+                            {slide.subtitle}
+                          </p>
+                        )}
+                      </div>
+                    </div>
+
+                    {/* Actions */}
+                    <div className="flex items-center justify-end gap-2 pt-2 border-t border-white/10">
+                      <button
+                        onClick={() => handleOpenEditSlide(slide)}
+                        className="px-3 py-1.5 rounded-lg bg-slate-800 text-slate-200 hover:text-white hover:bg-slate-700 text-xs font-bold flex items-center gap-1 transition-colors"
+                      >
+                        <Edit className="w-3.5 h-3.5" />
+                        <span>Edit</span>
+                      </button>
+
+                      <button
+                        onClick={() => setDeletingSlideId(slide.id)}
+                        className="px-3 py-1.5 rounded-lg bg-red-500/15 text-red-300 hover:bg-red-500/25 border border-red-500/30 text-xs font-bold flex items-center gap-1 transition-colors"
+                      >
+                        <Trash2 className="w-3.5 h-3.5" />
+                        <span>Remove</span>
+                      </button>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            ) : (
+              <div className="glass-card rounded-2xl p-10 text-center space-y-3">
+                <ImageIcon className="w-10 h-10 text-slate-600 mx-auto" />
+                <p className="text-sm text-slate-400 font-semibold">
+                  No slideshow images found. Click &quot;Add New Slide Image&quot; to add photos!
+                </p>
+              </div>
+            )}
+
+            {/* Add / Edit Slide Modal */}
+            {isSlideModalOpen && (
+              <div className="fixed inset-0 z-50 bg-black/70 backdrop-blur-sm flex items-center justify-center p-4">
+                <div className="glass-card w-full max-w-lg rounded-2xl p-6 space-y-4 border border-amber-500/40">
+                  <div className="flex items-center justify-between pb-2 border-b border-white/10">
+                    <h3 className="text-base font-bold text-amber-300 flex items-center gap-2">
+                      <ImageIcon className="w-5 h-5 text-amber-400" />
+                      {editingSlideId ? "Edit Slide Image" : "Add New Slide Image"}
+                    </h3>
+                    <button
+                      onClick={() => setIsSlideModalOpen(false)}
+                      className="p-1 rounded-lg text-slate-400 hover:text-white"
+                    >
+                      <X className="w-4 h-4" />
+                    </button>
+                  </div>
+
+                  <form onSubmit={handleSaveSlide} className="space-y-4">
+                    {/* Device Upload or URL */}
+                    <div className="space-y-2">
+                      <label className="text-xs font-bold text-slate-300">
+                        Slide Photo (Upload or Paste URL)
+                      </label>
+
+                      {slideFileName ? (
+                        <div className="flex items-center gap-3 p-2.5 rounded-xl bg-emerald-500/10 border border-emerald-500/30">
+                          <img
+                            src={slideImageUrl}
+                            alt="Preview"
+                            className="w-10 h-10 rounded-lg object-cover border border-emerald-400/50 shrink-0"
+                          />
+                          <div className="flex-1 min-w-0">
+                            <p className="text-xs font-bold text-emerald-300 truncate">{slideFileName}</p>
+                            <p className="text-[10px] text-slate-400">Uploaded from device</p>
+                          </div>
+                          <button
+                            type="button"
+                            onClick={() => cancelUpload(setSlideImageUrl, setSlideFileName, "", slideFileInputRef)}
+                            className="p-1.5 rounded-lg bg-red-500/15 text-red-300 hover:bg-red-500/25 border border-red-500/30"
+                          >
+                            <X className="w-4 h-4" />
+                          </button>
+                        </div>
+                      ) : (
+                        <button
+                          type="button"
+                          onClick={() => slideFileInputRef.current?.click()}
+                          className="w-full py-2.5 rounded-xl border border-dashed border-amber-500/40 bg-amber-500/5 hover:bg-amber-500/10 text-amber-300 text-xs font-bold transition-all flex items-center justify-center gap-2"
+                        >
+                          <Upload className="w-4 h-4" />
+                          <span>Click to Upload Photo from Device</span>
+                        </button>
+                      )}
+
+                      <input
+                        ref={slideFileInputRef}
+                        type="file"
+                        accept="image/*"
+                        className="hidden"
+                        onChange={(e) => handleFileUpload(e, setSlideImageUrl, setSlideFileName)}
+                      />
+
+                      <input
+                        type="url"
+                        placeholder="Or paste Image URL (https://...)"
+                        value={slideFileName ? "" : slideImageUrl}
+                        onChange={(e) => {
+                          setSlideImageUrl(e.target.value);
+                          setSlideFileName("");
+                        }}
+                        className="w-full px-3.5 py-2.5 rounded-xl bg-slate-900 border border-white/10 text-xs text-slate-100 focus:outline-none focus:border-amber-400"
+                      />
+                    </div>
+
+                    {/* Image Preview */}
+                    {slideImageUrl && (
+                      <div className="relative aspect-[16/9] rounded-xl overflow-hidden border border-white/10 bg-slate-900">
+                        <img
+                          src={slideImageUrl}
+                          alt="Preview"
+                          className="w-full h-full object-cover rounded-xl"
+                        />
+                      </div>
+                    )}
+
+                    {/* Slide Title */}
+                    <div className="space-y-1">
+                      <label className="text-xs font-bold text-slate-300">Slide Title</label>
+                      <input
+                        type="text"
+                        placeholder="e.g. Grand Inauguration Ceremony"
+                        value={slideTitle}
+                        onChange={(e) => setSlideTitle(e.target.value)}
+                        className="w-full px-3.5 py-2.5 rounded-xl bg-slate-900 border border-white/10 text-xs text-slate-100 focus:outline-none focus:border-amber-400"
+                      />
+                    </div>
+
+                    {/* Slide Subtitle */}
+                    <div className="space-y-1">
+                      <label className="text-xs font-bold text-slate-300">Slide Subtitle / Description</label>
+                      <input
+                        type="text"
+                        placeholder="e.g. Kizil Elma Stage Performances & Highlights"
+                        value={slideSubtitle}
+                        onChange={(e) => setSlideSubtitle(e.target.value)}
+                        className="w-full px-3.5 py-2.5 rounded-xl bg-slate-900 border border-white/10 text-xs text-slate-100 focus:outline-none focus:border-amber-400"
+                      />
+                    </div>
+
+                    {/* Category Selection */}
+                    <div className="space-y-1">
+                      <label className="text-xs font-bold text-slate-300">Category Tag</label>
+                      <select
+                        value={slideCategory}
+                        onChange={(e) => setSlideCategory(e.target.value)}
+                        className="w-full px-3.5 py-2.5 rounded-xl bg-slate-900 border border-white/10 text-xs text-slate-100 focus:outline-none focus:border-amber-400"
+                      >
+                        <option value="Stage">Stage</option>
+                        <option value="Off-Stage">Off-Stage</option>
+                        <option value="General">General</option>
+                      </select>
+                    </div>
+
+                    {/* Actions */}
+                    <div className="flex justify-end gap-2 pt-2 border-t border-white/10">
+                      <button
+                        type="button"
+                        onClick={() => setIsSlideModalOpen(false)}
+                        className="px-4 py-2 rounded-xl bg-slate-800 text-xs text-slate-300 hover:text-white font-bold"
+                      >
+                        Cancel
+                      </button>
+                      <button
+                        type="submit"
+                        className="px-4 py-2 rounded-xl bg-amber-500 text-slate-950 font-bold text-xs hover:bg-amber-400 transition-colors shadow-md"
+                      >
+                        {editingSlideId ? "Save Changes" : "Add Slide Image"}
+                      </button>
+                    </div>
+                  </form>
+                </div>
+              </div>
+            )}
+
+            {/* Slide Delete Confirmation Modal */}
+            {deletingSlideId && (
+              <div className="fixed inset-0 z-50 bg-black/70 backdrop-blur-sm flex items-center justify-center p-4">
+                <div className="glass-card w-full max-w-md rounded-2xl p-6 space-y-4 border border-red-500/40">
+                  <div className="flex items-center gap-3">
+                    <div className="w-10 h-10 rounded-xl bg-red-500/20 flex items-center justify-center text-red-400 shrink-0">
+                      <Trash2 className="w-5 h-5" />
+                    </div>
+                    <div>
+                      <h3 className="text-base font-bold text-red-200">
+                        Remove Slide Image?
+                      </h3>
+                      <p className="text-xs text-slate-400 mt-0.5">
+                        Are you sure you want to remove this slide image from the homepage gallery? This action cannot be undone.
+                      </p>
+                    </div>
+                  </div>
+
+                  <div className="flex justify-end gap-2 pt-2">
+                    <button
+                      type="button"
+                      onClick={() => setDeletingSlideId(null)}
+                      className="px-4 py-2 rounded-xl bg-slate-800 text-xs text-slate-300 hover:text-white font-bold"
+                    >
+                      Cancel
+                    </button>
+                    <button
+                      type="button"
+                      onClick={handleConfirmDeleteSlide}
+                      className="px-4 py-2 rounded-xl bg-red-600 text-white font-bold text-xs hover:bg-red-500 flex items-center gap-1.5 transition-colors"
+                    >
+                      <Trash2 className="w-3.5 h-3.5" />
+                      Yes, Remove Image
+                    </button>
+                  </div>
+                </div>
+              </div>
+            )}
+          </div>
+        )}
+
+        {/* TAB 7: Settings & Zero Reset */}
         {activeAdminTab === "settings" && (
           <div className="space-y-6 max-w-3xl mx-auto">
             {/* Zero Points Reset */}

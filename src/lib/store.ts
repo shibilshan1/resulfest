@@ -1,12 +1,13 @@
 "use client";
 
 import { useState, useEffect, useMemo } from "react";
-import { Team, Student, Program, Result, ScoreProgressionPoint } from "@/types";
+import { Team, Student, Program, Result, ScoreProgressionPoint, SlideshowImage } from "@/types";
 import {
   INITIAL_TEAMS,
   INITIAL_STUDENTS,
   INITIAL_PROGRAMS,
   INITIAL_RESULTS,
+  INITIAL_SLIDESHOW_IMAGES,
   UNKNOWN_PERSON_AVATAR,
 } from "./mockData";
 import { db, isFirebaseConfigured } from "./firebase";
@@ -29,6 +30,7 @@ export function useFestStore() {
   const [rawStudents, setRawStudents] = useState<Student[]>([]);
   const [programs, setPrograms] = useState<Program[]>([]);
   const [results, setResults] = useState<Result[]>([]);
+  const [slideshowImages, setSlideshowImages] = useState<SlideshowImage[]>(INITIAL_SLIDESHOW_IMAGES);
   const [isLoading, setIsLoading] = useState(true);
 
   // ─── Data loading & Firebase Realtime Listeners ────────────────────
@@ -39,6 +41,7 @@ export function useFestStore() {
       setRawStudents(INITIAL_STUDENTS);
       setPrograms(INITIAL_PROGRAMS);
       setResults(INITIAL_RESULTS);
+      setSlideshowImages(INITIAL_SLIDESHOW_IMAGES);
       setIsLoading(false);
       return;
     }
@@ -157,13 +160,58 @@ export function useFestStore() {
       }
     );
 
+    // 5. Slideshow Images listener
+    const unsubSlideshow = onSnapshot(
+      collection(database, "slideshow_images"),
+      (snapshot: QuerySnapshot<DocumentData>) => {
+        const loaded = snapshot.docs.map(
+          (docSnap: QueryDocumentSnapshot<DocumentData>) => docSnap.data() as SlideshowImage
+        );
+        setSlideshowImages(loaded.length > 0 ? loaded : INITIAL_SLIDESHOW_IMAGES);
+      },
+      (err: unknown) => {
+        console.error("Slideshow listener error:", err);
+      }
+    );
+
     return () => {
       unsubTeams();
       unsubStudents();
       unsubPrograms();
       unsubResults();
+      unsubSlideshow();
     };
   }, []);
+
+  // ─── Slideshow Images CRUD Operations ────────────────────
+  const addSlideshowImage = async (img: Omit<SlideshowImage, "id">) => {
+    const id = "slide-" + Date.now();
+    const newSlide: SlideshowImage = {
+      ...img,
+      id,
+      created_at: new Date().toISOString(),
+    };
+    setSlideshowImages((prev) => [newSlide, ...prev]);
+    if (db && isFirebaseConfigured) {
+      await setDoc(doc(db, "slideshow_images", id), newSlide);
+    }
+  };
+
+  const updateSlideshowImage = async (id: string, updates: Partial<SlideshowImage>) => {
+    setSlideshowImages((prev) =>
+      prev.map((item) => (item.id === id ? { ...item, ...updates } : item))
+    );
+    if (db && isFirebaseConfigured) {
+      await updateDoc(doc(db, "slideshow_images", id), updates);
+    }
+  };
+
+  const deleteSlideshowImage = async (id: string) => {
+    setSlideshowImages((prev) => prev.filter((item) => item.id !== id));
+    if (db && isFirebaseConfigured) {
+      await deleteDoc(doc(db, "slideshow_images", id));
+    }
+  };
 
   /** Seed Firebase with initial mock data if database is empty */
   async function seedFirebase() {
@@ -634,6 +682,7 @@ export function useFestStore() {
     students,
     programs,
     results,
+    slideshowImages,
     isLoading,
     isConfigured: isFirebaseConfigured,
     toggleProgramReveal,
@@ -649,6 +698,9 @@ export function useFestStore() {
     updateProgram,
     deleteProgram,
     updateTeam,
+    addSlideshowImage,
+    updateSlideshowImage,
+    deleteSlideshowImage,
     resetAllPointsToZero,
     resetToDemoData,
     getScoreProgressionData,

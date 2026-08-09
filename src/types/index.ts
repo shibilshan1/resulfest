@@ -49,3 +49,12 @@ export interface ScoreProgressionPoint {
   [teamName: string]: number | string;
 }
 
+export interface SlideshowImage {
+  id: string;
+  image_url: string;
+  title?: string;
+  subtitle?: string;
+  category?: string;
+  created_at?: string;
+}
+

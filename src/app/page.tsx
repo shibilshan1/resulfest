@@ -12,6 +12,7 @@ import { CheckYourPointsRank } from "@/components/CheckYourPointsRank";
 import { TeamDetailModal } from "@/components/TeamDetailModal";
 import { LiveResultPopup } from "@/components/LiveResultPopup";
 import { StudentPointsModal } from "@/components/StudentPointsModal";
+import { ImageSlideshow } from "@/components/ImageSlideshow";
 import Link from "next/link";
 
 interface AppHistoryState {
@@ -39,6 +40,7 @@ export default function Home() {
     students,
     programs,
     results,
+    slideshowImages,
     isLoading,
     isConfigured,
     getScoreProgressionData,
@@ -363,6 +365,7 @@ export default function Home() {
           showAllStudents={showAllStudents}
           setShowAllStudents={handleSetShowAllStudents}
         />
+        <ImageSlideshow images={slideshowImages} />
       </main>
 
       {/* Team Detail Modal */}
