@@ -305,13 +305,15 @@ export const INITIAL_SLIDESHOW_IMAGES = [
     title: "Grand Inauguration Ceremony",
     subtitle: "Kizil Elma 2K26 Stage Performances",
     category: "Stage",
+    aspect_ratio: "landscape",
   },
   {
     id: "slide-2",
-    image_url: "https://images.unsplash.com/photo-1475721027785-f74eccf877e2?q=80&w=1200&auto=format&fit=crop",
-    title: "Inspiring Speech & Debates",
+    image_url: "https://images.unsplash.com/photo-1534528741775-53994a69daeb?q=80&w=1200&auto=format&fit=crop",
+    title: "Stage Solo Performance",
     subtitle: "Sanaviyya & Bakalooria Highlights",
     category: "Stage",
+    aspect_ratio: "portrait",
   },
   {
     id: "slide-3",
@@ -319,6 +321,7 @@ export const INITIAL_SLIDESHOW_IMAGES = [
     title: "Championship Award Night",
     subtitle: "Trophy Presentation & Team Honors",
     category: "Off-Stage",
+    aspect_ratio: "square",
   },
   {
     id: "slide-4",
@@ -326,5 +329,22 @@ export const INITIAL_SLIDESHOW_IMAGES = [
     title: "Cultural Extravaganza",
     subtitle: "Moments of Unity and Excellence",
     category: "General",
+    aspect_ratio: "landscape",
+  },
+  {
+    id: "slide-5",
+    image_url: "https://images.unsplash.com/photo-1475721027785-f74eccf877e2?q=80&w=1200&auto=format&fit=crop",
+    title: "Keynote Address & Debates",
+    subtitle: "Inspiring Speeches by Winners",
+    category: "Stage",
+    aspect_ratio: "portrait",
+  },
+  {
+    id: "slide-6",
+    image_url: "https://images.unsplash.com/photo-1514525253161-7a46d19cd819?q=80&w=1200&auto=format&fit=crop",
+    title: "Team Spirit & Celebrations",
+    subtitle: "Quba, Juhfa, Khudyd, Thawr",
+    category: "General",
+    aspect_ratio: "square",
   },
 ];

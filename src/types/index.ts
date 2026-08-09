@@ -55,6 +55,7 @@ export interface SlideshowImage {
   title?: string;
   subtitle?: string;
   category?: string;
+  aspect_ratio?: "portrait" | "square" | "landscape" | string;
   created_at?: string;
 }
 

@@ -82,6 +82,7 @@ export default function AdminPage() {
   const [slideTitle, setSlideTitle] = useState("");
   const [slideSubtitle, setSlideSubtitle] = useState("");
   const [slideCategory, setSlideCategory] = useState("Stage");
+  const [slideAspect, setSlideAspect] = useState("landscape");
   const [editingSlideId, setEditingSlideId] = useState<string | null>(null);
   const [isSlideModalOpen, setIsSlideModalOpen] = useState(false);
   const [deletingSlideId, setDeletingSlideId] = useState<string | null>(null);
@@ -286,16 +287,18 @@ export default function AdminPage() {
     setSlideTitle("");
     setSlideSubtitle("");
     setSlideCategory("Stage");
+    setSlideAspect("landscape");
     setSlideFileName("");
     setIsSlideModalOpen(true);
   };
 
-  const handleOpenEditSlide = (slide: { id: string; image_url: string; title?: string; subtitle?: string; category?: string }) => {
+  const handleOpenEditSlide = (slide: { id: string; image_url: string; title?: string; subtitle?: string; category?: string; aspect_ratio?: string }) => {
     setEditingSlideId(slide.id);
     setSlideImageUrl(slide.image_url);
     setSlideTitle(slide.title || "");
     setSlideSubtitle(slide.subtitle || "");
     setSlideCategory(slide.category || "Stage");
+    setSlideAspect(slide.aspect_ratio || "landscape");
     setSlideFileName("");
     setIsSlideModalOpen(true);
   };
@@ -314,6 +317,7 @@ export default function AdminPage() {
         title: slideTitle.trim(),
         subtitle: slideSubtitle.trim(),
         category: slideCategory,
+        aspect_ratio: slideAspect,
       });
       setResultSuccessMsg("Slide image updated successfully! 📸");
     } else {
@@ -322,6 +326,7 @@ export default function AdminPage() {
         title: slideTitle.trim(),
         subtitle: slideSubtitle.trim(),
         category: slideCategory,
+        aspect_ratio: slideAspect,
       });
       setResultSuccessMsg("New slide image added successfully! 📸");
     }
@@ -2825,17 +2830,32 @@ export default function AdminPage() {
                     </div>
 
                     {/* Category Selection */}
-                    <div className="space-y-1">
-                      <label className="text-xs font-bold text-slate-300">Category Tag</label>
-                      <select
-                        value={slideCategory}
-                        onChange={(e) => setSlideCategory(e.target.value)}
-                        className="w-full px-3.5 py-2.5 rounded-xl bg-slate-900 border border-white/10 text-xs text-slate-100 focus:outline-none focus:border-amber-400"
-                      >
-                        <option value="Stage">Stage</option>
-                        <option value="Off-Stage">Off-Stage</option>
-                        <option value="General">General</option>
-                      </select>
+                    <div className="grid grid-cols-2 gap-3">
+                      <div className="space-y-1">
+                        <label className="text-xs font-bold text-slate-300">Category Tag</label>
+                        <select
+                          value={slideCategory}
+                          onChange={(e) => setSlideCategory(e.target.value)}
+                          className="w-full px-3.5 py-2.5 rounded-xl bg-slate-900 border border-white/10 text-xs text-slate-100 focus:outline-none focus:border-amber-400"
+                        >
+                          <option value="Stage">Stage</option>
+                          <option value="Off-Stage">Off-Stage</option>
+                          <option value="General">General</option>
+                        </select>
+                      </div>
+
+                      <div className="space-y-1">
+                        <label className="text-xs font-bold text-slate-300">Card Box Shape</label>
+                        <select
+                          value={slideAspect}
+                          onChange={(e) => setSlideAspect(e.target.value)}
+                          className="w-full px-3.5 py-2.5 rounded-xl bg-slate-900 border border-white/10 text-xs text-slate-100 focus:outline-none focus:border-amber-400"
+                        >
+                          <option value="portrait">Vertical (Tall Portrait 3:4)</option>
+                          <option value="square">Square Box (1:1)</option>
+                          <option value="landscape">Wide Showcase (16:9)</option>
+                        </select>
+                      </div>
                     </div>
 
                     {/* Actions */}
