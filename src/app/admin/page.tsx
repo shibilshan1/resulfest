@@ -33,6 +33,7 @@ import {
   ImageIcon,
 } from "lucide-react";
 import { InstagramIcon } from "@/components/ImageSlideshow";
+import { compressImageFile } from "@/lib/imageCompressor";
 import Link from "next/link";
 
 export interface WinnerRow {
@@ -333,36 +334,34 @@ export default function AdminPage() {
     setSlideExtraUrls((prev) => prev.filter((_, i) => i !== index));
   };
 
-  const handleMultipleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleMultipleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = Array.from(e.target.files || []);
     if (files.length === 0) return;
 
-    files.forEach((file, index) => {
-      if (!file.type.startsWith("image/")) return;
+    for (const file of files) {
+      if (!file.type.startsWith("image/")) continue;
 
-      // Validate file size (max 40MB)
+      // Validate file size (max 40MB raw input)
       if (file.size > 40 * 1024 * 1024) {
         setResultSuccessMsg(`❌ "${file.name}" is too large! Max 40MB per image allowed.`);
         setTimeout(() => setResultSuccessMsg(""), 4000);
-        return;
+        continue;
       }
 
-      const reader = new FileReader();
-      reader.onload = (event) => {
-        const result = event.target?.result as string;
-        if (result) {
-          setSlideImageUrl((prev) => {
-            if (!prev.trim()) {
-              setSlideFileName(file.name);
-              return result;
-            }
-            return prev;
-          });
-          setSlideExtraUrls((prev) => Array.from(new Set([...prev, result])));
-        }
-      };
-      reader.readAsDataURL(file);
-    });
+      try {
+        const compressedResult = await compressImageFile(file);
+        setSlideImageUrl((prev) => {
+          if (!prev.trim()) {
+            setSlideFileName(file.name);
+            return compressedResult;
+          }
+          return prev;
+        });
+        setSlideExtraUrls((prev) => Array.from(new Set([...prev, compressedResult])));
+      } catch (err) {
+        console.error("Failed to compress image file:", err);
+      }
+    }
   };
 
   const handleSaveSlide = async (e: React.FormEvent) => {
@@ -411,8 +410,8 @@ export default function AdminPage() {
     setTimeout(() => setResultSuccessMsg(""), 4000);
   };
 
-  // Handle file upload -> base64 conversion
-  const handleFileUpload = (
+  // Handle file upload -> base64 conversion with auto-compression
+  const handleFileUpload = async (
     e: React.ChangeEvent<HTMLInputElement>,
     setPhoto: (url: string) => void,
     setFileName: (name: string) => void
@@ -434,13 +433,20 @@ export default function AdminPage() {
       return;
     }
 
-    const reader = new FileReader();
-    reader.onload = (event) => {
-      const base64 = event.target?.result as string;
-      setPhoto(base64);
+    try {
+      const compressedBase64 = await compressImageFile(file);
+      setPhoto(compressedBase64);
       setFileName(file.name);
-    };
-    reader.readAsDataURL(file);
+    } catch (err) {
+      console.error("Image compression error:", err);
+      const reader = new FileReader();
+      reader.onload = (event) => {
+        const base64 = event.target?.result as string;
+        setPhoto(base64);
+        setFileName(file.name);
+      };
+      reader.readAsDataURL(file);
+    }
   };
 
   const cancelUpload = (

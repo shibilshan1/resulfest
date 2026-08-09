@@ -160,17 +160,42 @@ export function useFestStore() {
       }
     );
 
-    // 5. Slideshow Images listener
+    // 5. Slideshow Images listener with LocalStorage Sync
     const unsubSlideshow = onSnapshot(
       collection(database, "slideshow_images"),
       (snapshot: QuerySnapshot<DocumentData>) => {
         const loaded = snapshot.docs.map(
           (docSnap: QueryDocumentSnapshot<DocumentData>) => docSnap.data() as SlideshowImage
         );
-        setSlideshowImages(loaded);
+        if (loaded.length > 0) {
+          setSlideshowImages(loaded);
+          try {
+            localStorage.setItem("kizilelma_slideshow_images", JSON.stringify(loaded));
+          } catch (e) {
+            console.warn("Could not save slideshow to localStorage:", e);
+          }
+        } else {
+          // If Firestore is empty, check localStorage fallback
+          try {
+            const cached = localStorage.getItem("kizilelma_slideshow_images");
+            if (cached) {
+              setSlideshowImages(JSON.parse(cached));
+            } else {
+              setSlideshowImages([]);
+            }
+          } catch {
+            setSlideshowImages([]);
+          }
+        }
       },
       (err: unknown) => {
         console.error("Slideshow listener error:", err);
+        try {
+          const cached = localStorage.getItem("kizilelma_slideshow_images");
+          if (cached) setSlideshowImages(JSON.parse(cached));
+        } catch {
+          // ignore
+        }
       }
     );
 
@@ -191,25 +216,65 @@ export function useFestStore() {
       id,
       created_at: new Date().toISOString(),
     };
-    setSlideshowImages((prev) => [newSlide, ...prev]);
+    setSlideshowImages((prev) => {
+      const updated = [newSlide, ...prev];
+      try {
+        localStorage.setItem("kizilelma_slideshow_images", JSON.stringify(updated));
+      } catch (e) {
+        console.warn("LocalStorage save error:", e);
+      }
+      return updated;
+    });
+
     if (db && isFirebaseConfigured) {
-      await setDoc(doc(db, "slideshow_images", id), newSlide);
+      try {
+        await setDoc(doc(db, "slideshow_images", id), newSlide);
+        console.log("✅ Slideshow image saved to Firebase successfully!");
+      } catch (err) {
+        console.error("❌ Failed to save slideshow image to Firebase:", err);
+      }
     }
   };
 
   const updateSlideshowImage = async (id: string, updates: Partial<SlideshowImage>) => {
-    setSlideshowImages((prev) =>
-      prev.map((item) => (item.id === id ? { ...item, ...updates } : item))
-    );
+    setSlideshowImages((prev) => {
+      const updated = prev.map((item) => (item.id === id ? { ...item, ...updates } : item));
+      try {
+        localStorage.setItem("kizilelma_slideshow_images", JSON.stringify(updated));
+      } catch (e) {
+        console.warn("LocalStorage update error:", e);
+      }
+      return updated;
+    });
+
     if (db && isFirebaseConfigured) {
-      await updateDoc(doc(db, "slideshow_images", id), updates);
+      try {
+        await updateDoc(doc(db, "slideshow_images", id), updates);
+        console.log("✅ Slideshow image updated in Firebase!");
+      } catch (err) {
+        console.error("❌ Failed to update slideshow image in Firebase:", err);
+      }
     }
   };
 
   const deleteSlideshowImage = async (id: string) => {
-    setSlideshowImages((prev) => prev.filter((item) => item.id !== id));
+    setSlideshowImages((prev) => {
+      const updated = prev.filter((item) => item.id !== id);
+      try {
+        localStorage.setItem("kizilelma_slideshow_images", JSON.stringify(updated));
+      } catch (e) {
+        console.warn("LocalStorage delete error:", e);
+      }
+      return updated;
+    });
+
     if (db && isFirebaseConfigured) {
-      await deleteDoc(doc(db, "slideshow_images", id));
+      try {
+        await deleteDoc(doc(db, "slideshow_images", id));
+        console.log("✅ Slideshow image deleted from Firebase!");
+      } catch (err) {
+        console.error("❌ Failed to delete slideshow image from Firebase:", err);
+      }
     }
   };
 
