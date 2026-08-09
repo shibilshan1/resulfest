@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { Trophy, CalendarDays, Medal, User, Home, Menu, Search, MoreVertical } from "lucide-react";
+import { Trophy, CalendarDays, Home, Menu, User, Award } from "lucide-react";
 
 interface NavbarProps {
   activeTab: string;
@@ -19,60 +19,50 @@ export function Navbar({ activeTab, setActiveTab }: NavbarProps) {
 
   const navItems = [
     { id: "hero",         label: "Home",        icon: Home },
+    { id: "results",      label: "Stage",       icon: Award },
     { id: "scoreboard",   label: "Scoreboard",  icon: Trophy },
-    { id: "results",      label: "Events",      icon: CalendarDays },
-    { id: "check-points",  label: "Search",      icon: Search },
   ];
 
   return (
     <>
-      {/* ── Top Header matching screenshot ── */}
-      <header
-        style={{
-          background: "#FFFFFF",
-          borderBottom: "1px solid #F1F5F9",
-          boxShadow: "0 1px 8px rgba(0,0,0,0.03)",
-        }}
-        className="sticky top-0 z-40 w-full px-4 py-3"
-      >
-        <div className="max-w-6xl mx-auto flex items-center justify-between">
-          {/* Left: Hamburger menu + Title */}
+      {/* ── Top Header matching design code ── */}
+      <header className="sticky top-0 z-50 w-full h-16 px-4 sm:px-6 bg-white/80 backdrop-blur-xl border-b border-slate-200/80 shadow-[0_8px_32px_rgba(0,0,0,0.04)] flex items-center justify-between">
+        <div className="max-w-5xl mx-auto w-full flex items-center justify-between">
+          {/* Left: Menu + Title */}
           <div
             onClick={() => scrollToSection("hero")}
             className="flex items-center gap-3 cursor-pointer"
           >
             <button
-              className="p-1 rounded-lg text-slate-700 hover:bg-slate-100 transition-colors"
+              className="p-1.5 rounded-xl text-slate-700 hover:bg-slate-100 transition-colors"
               title="Menu"
             >
-              <Menu className="w-6 h-6 stroke-[2.2]" />
+              <Menu className="w-6 h-6 stroke-[2.2] text-[#0058bc]" />
             </button>
 
-            <h1 className="text-xl sm:text-2xl font-bold text-slate-900 tracking-tight leading-none">
+            <h1 className="text-xl sm:text-2xl font-black text-[#0058bc] tracking-tight leading-none">
               Kizil Elma
             </h1>
           </div>
 
-          {/* Right Header Actions: Round Profile Avatar & Admin */}
-          <div className="flex items-center gap-2.5">
-            <Link
-              href="/admin"
-              className="relative w-9 h-9 sm:w-10 sm:h-10 rounded-full border-2 border-[#0062D2] p-0.5 bg-white shadow-xs transition-transform hover:scale-105 flex items-center justify-center overflow-hidden"
-              title="Admin Portal"
-            >
-              <img
-                src="/logo.png"
-                alt="Profile"
-                className="w-full h-full object-cover rounded-full"
-              />
-            </Link>
-          </div>
+          {/* Right: Round Profile Avatar & Admin Link */}
+          <Link
+            href="/admin"
+            className="w-10 h-10 rounded-full border-2 border-[#0070eb] p-0.5 bg-white shadow-xs transition-transform hover:scale-105 flex items-center justify-center overflow-hidden"
+            title="Admin Portal / Profile"
+          >
+            <img
+              src="/logo.png"
+              alt="Profile"
+              className="w-full h-full object-cover rounded-full"
+            />
+          </Link>
         </div>
       </header>
 
-      {/* ── Bottom Navigation Bar matching screenshot ── */}
+      {/* ── Bottom Navigation Bar matching design code ── */}
       <nav
-        className="bottom-nav md:hidden fixed bottom-0 left-0 right-0 z-40 px-3 py-2 flex items-center justify-around bg-white border-t border-slate-100 shadow-lg"
+        className="fixed bottom-0 left-0 right-0 z-50 px-4 py-2 flex items-center justify-around bg-white/90 backdrop-blur-xl border-t border-slate-200/80 shadow-[0_-8px_32px_rgba(0,0,0,0.06)]"
         style={{
           paddingBottom: "max(8px, env(safe-area-inset-bottom))",
         }}
@@ -86,10 +76,10 @@ export function Navbar({ activeTab, setActiveTab }: NavbarProps) {
               <button
                 key={item.id}
                 onClick={() => scrollToSection(item.id)}
-                className="flex flex-col items-center justify-center py-1.5 px-5 rounded-full bg-[#0062D2] text-white shadow-md shadow-blue-600/30 transition-all cursor-pointer border-0"
+                className="flex items-center gap-2 py-1.5 px-4 rounded-full bg-[#0070eb] text-white shadow-md shadow-blue-600/30 transition-all cursor-pointer border-0"
               >
-                <Icon className="w-5 h-5 text-white stroke-[2.5]" />
-                <span className="text-[10px] font-extrabold tracking-wide mt-0.5 text-white">
+                <Icon className="w-4 h-4 text-white stroke-[2.5]" />
+                <span className="text-xs font-bold tracking-wide text-white">
                   {item.label}
                 </span>
               </button>
@@ -100,15 +90,26 @@ export function Navbar({ activeTab, setActiveTab }: NavbarProps) {
             <button
               key={item.id}
               onClick={() => scrollToSection(item.id)}
-              className="flex flex-col items-center justify-center py-1.5 px-3 rounded-full text-slate-500 hover:text-slate-800 transition-colors cursor-pointer border-0 bg-transparent"
+              className="flex flex-col items-center justify-center py-1 px-3 rounded-full text-slate-500 hover:text-slate-900 transition-colors cursor-pointer border-0 bg-transparent"
             >
               <Icon className="w-5 h-5 text-slate-500 stroke-[2]" />
-              <span className="text-[10px] font-semibold tracking-tight mt-0.5 text-slate-500">
+              <span className="text-[11px] font-semibold tracking-tight mt-0.5 text-slate-500">
                 {item.label}
               </span>
             </button>
           );
         })}
+
+        {/* Profile / Admin link */}
+        <Link
+          href="/admin"
+          className="flex flex-col items-center justify-center py-1 px-3 rounded-full text-slate-500 hover:text-slate-900 transition-colors cursor-pointer"
+        >
+          <User className="w-5 h-5 text-slate-500 stroke-[2]" />
+          <span className="text-[11px] font-semibold tracking-tight mt-0.5 text-slate-500">
+            Profile
+          </span>
+        </Link>
       </nav>
     </>
   );

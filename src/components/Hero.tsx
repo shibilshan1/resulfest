@@ -1,80 +1,115 @@
 "use client";
 
-import Link from "next/link";
-import { User, BarChart2, Star } from "lucide-react";
-import { Team, Program } from "@/types";
+import { ListFilter, Users, ArrowRight, Zap } from "lucide-react";
 
 interface HeroProps {
   onEnterMeet: () => void;
-  teams?: Team[];
-  programs?: Program[];
+  programsCount?: number;
+  participantsCount?: number;
 }
 
-export function Hero({ onEnterMeet }: HeroProps) {
+export function Hero({
+  onEnterMeet,
+  programsCount = 24,
+  participantsCount = 1240,
+}: HeroProps) {
   return (
     <section
       id="hero"
-      className="relative w-full min-h-[calc(100dvh-70px)] flex flex-col items-center justify-between sm:justify-center text-center px-4 py-8 overflow-hidden bg-gradient-to-b from-white via-[#F8FAFC] to-[#F1F5F9]"
+      className="w-full max-w-lg mx-auto px-4 pt-4 pb-12 space-y-6 animate-fadeIn"
     >
-      {/* Background Subtle Ambient Glow */}
-      <div className="absolute top-1/4 left-1/2 -translate-x-1/2 -translate-y-1/2 w-72 h-72 rounded-full bg-blue-500/10 blur-3xl pointer-events-none" />
+      {/* Hero Banner Section (AKMM TALENTS MEET 2K26) */}
+      <div className="relative h-[360px] sm:h-[397px] rounded-2xl overflow-hidden shadow-lg border border-slate-200/80 group">
+        {/* Background Image / Artwork */}
+        <div className="absolute inset-0 bg-[#F4F3F8] flex items-center justify-center p-6">
+          <img
+            src="/logo.png"
+            alt="Kizil Elma Logo"
+            className="max-w-full max-h-full object-contain filter drop-shadow-md group-hover:scale-105 transition-transform duration-500"
+          />
+        </div>
 
-      <div className="relative w-full max-w-md mx-auto flex-1 flex flex-col items-center justify-evenly text-center space-y-6 z-10">
-        {/* Top Spacer for mobile balance */}
-        <div className="pt-2" />
+        {/* Gradient Overlay */}
+        <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/30 to-transparent z-10" />
 
-        {/* Circular Logo Icon with Glow */}
-        <div className="relative">
-          <div
-            className="w-32 h-32 sm:w-40 sm:h-40 rounded-full bg-white p-2.5 shadow-xl border border-slate-100 flex items-center justify-center mx-auto transition-transform hover:scale-105"
-            style={{
-              boxShadow: "0 14px 35px rgba(0, 98, 210, 0.12)",
-            }}
-          >
-            <img
-              src="/logo.png"
-              alt="Kizil Elma Logo"
-              className="w-full h-full object-contain rounded-full"
-            />
+        {/* Banner Titles */}
+        <div className="absolute bottom-0 left-0 right-0 p-5 sm:p-6 z-20 space-y-1">
+          <p className="text-white/80 text-[11px] font-black uppercase tracking-widest">
+            National Talent Meet
+          </p>
+          <h2 className="text-white font-extrabold text-2xl sm:text-3xl tracking-tight leading-none drop-shadow-md">
+            AKMM TALENTS MEET 2K26
+          </h2>
+        </div>
+      </div>
+
+      {/* Welcome Text */}
+      <div className="space-y-1.5 text-center px-2">
+        <h3 className="text-xl sm:text-2xl font-bold text-slate-900 tracking-tight">
+          Heading for the Ultimate Goal
+        </h3>
+        <p className="text-xs sm:text-sm font-medium text-slate-500 max-w-sm mx-auto leading-relaxed">
+          Step into the arena where national excellence meets tomorrow&apos;s leadership. Your session is prepared.
+        </p>
+      </div>
+
+      {/* Session Detail Cards (Bento style grid with Dynamic Live Props) */}
+      <div className="grid grid-cols-2 gap-3.5">
+        {/* Programs Card */}
+        <div className="bg-white/80 backdrop-blur-md p-4 rounded-2xl border border-slate-200/80 shadow-xs flex flex-col items-center text-center space-y-1.5 hover:shadow-md transition-all">
+          <div className="w-9 h-9 rounded-xl bg-amber-500/10 flex items-center justify-center text-[#fe9400]">
+            <ListFilter className="w-5 h-5 stroke-[2.2]" />
           </div>
-        </div>
-
-        {/* Title and Tagline */}
-        <div className="space-y-2">
-          <h1 className="text-3xl sm:text-5xl font-black text-slate-900 tracking-tight leading-tight">
-            Kizil Elma
-          </h1>
-          <p className="text-base sm:text-xl font-semibold text-slate-600">
-            Heading for the Ultimate Goal
+          <p className="text-[11px] font-bold text-slate-400 uppercase tracking-wider">
+            Programs
+          </p>
+          <p className="text-2xl sm:text-3xl font-extrabold text-slate-900">
+            {programsCount}
           </p>
         </div>
 
-        {/* Star Divider Line */}
-        <div className="flex items-center justify-center gap-4 w-full max-w-xs py-1">
-          <div className="h-[1.5px] flex-1 bg-slate-200" />
-          <Star className="w-4 h-4 text-[#0062D2] fill-[#0062D2]/20 stroke-[2]" />
-          <div className="h-[1.5px] flex-1 bg-slate-200" />
-        </div>
-
-        {/* Official Application Subtext */}
-        <div className="space-y-1">
-          <p className="text-xs font-bold text-[#0062D2] uppercase tracking-wider">
-            Official Results Application for
+        {/* Participants Card */}
+        <div className="bg-white/80 backdrop-blur-md p-4 rounded-2xl border border-slate-200/80 shadow-xs flex flex-col items-center text-center space-y-1.5 hover:shadow-md transition-all">
+          <div className="w-9 h-9 rounded-xl bg-blue-500/10 flex items-center justify-center text-[#0058bc]">
+            <Users className="w-5 h-5 stroke-[2.2]" />
+          </div>
+          <p className="text-[11px] font-bold text-slate-400 uppercase tracking-wider">
+            Participants
           </p>
-          <p className="text-xs sm:text-sm font-black text-[#1E40AF] tracking-wide uppercase">
-            AKMM COLLEGE LEVEL TALENTS MEET 2K26
+          <p className="text-2xl sm:text-3xl font-extrabold text-slate-900">
+            {participantsCount.toLocaleString()}
           </p>
         </div>
+      </div>
 
-        {/* VIEW RESULTS Pill Button matching screenshot */}
-        <div className="pt-4 w-full flex justify-center pb-4">
-          <button
-            onClick={onEnterMeet}
-            className="w-full max-w-xs sm:max-w-sm py-4 px-8 rounded-full bg-gradient-to-r from-[#0062D2] to-[#004BB0] hover:from-[#0054BB] hover:to-[#003E99] text-white font-extrabold text-base tracking-wider uppercase shadow-xl shadow-blue-600/35 flex items-center justify-center gap-3 transition-all hover:scale-105 active:scale-95 cursor-pointer border border-white/20"
-          >
-            <BarChart2 className="w-5 h-5 text-white stroke-[2.5]" />
-            <span>VIEW RESULTS</span>
-          </button>
+      {/* Main Action Button (Open Session) */}
+      <div className="flex flex-col items-center pt-2 space-y-3">
+        <button
+          onClick={onEnterMeet}
+          className="w-full py-4 px-8 rounded-full bg-gradient-to-r from-[#0070eb] to-[#0058bc] hover:from-[#0060cb] hover:to-[#0048a0] text-white font-extrabold text-lg sm:text-xl shadow-[0_12px_24px_rgba(0,88,188,0.3)] active:scale-95 transition-all duration-200 flex items-center justify-center gap-3 group cursor-pointer border border-white/20"
+        >
+          <span>Open Session</span>
+          <ArrowRight className="w-6 h-6 stroke-[2.5] group-hover:translate-x-1 transition-transform" />
+        </button>
+
+        <p className="text-xs font-semibold text-slate-500 flex items-center gap-2">
+          <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
+          <span>System Ready for Induction</span>
+        </p>
+      </div>
+
+      {/* Quick Status Card */}
+      <div className="bg-white/90 backdrop-blur-md p-4 rounded-2xl shadow-xs border border-slate-200/80 flex items-center justify-between border-l-4 border-l-[#fe9400]">
+        <div className="space-y-0.5">
+          <p className="text-xs sm:text-sm font-extrabold text-slate-900">
+            Stage One Activation
+          </p>
+          <p className="text-[11px] font-semibold text-slate-500">
+            Fine Arts &amp; Digital Innovation
+          </p>
+        </div>
+        <div className="w-9 h-9 rounded-full bg-amber-500/15 flex items-center justify-center text-[#fe9400] shrink-0">
+          <Zap className="w-5 h-5 fill-[#fe9400]/20 stroke-[2.2]" />
         </div>
       </div>
     </section>

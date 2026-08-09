@@ -341,7 +341,11 @@ export default function Home() {
 
       {/* Main Content */}
       <main style={{ flex: 1, paddingBottom: 80 }}>
-        <Hero onEnterMeet={handleEnterMeet} teams={teams} programs={programs} />
+        <Hero
+          onEnterMeet={handleEnterMeet}
+          programsCount={programs.length}
+          participantsCount={students.length}
+        />
         <Scoreboard
           teams={teams}
           scoreProgression={scoreProgression}
