@@ -148,9 +148,9 @@ export function Navbar({ activeTab, setActiveTab }: NavbarProps) {
         </div>
       </header>
 
-      {/* ── Bottom Navigation Bar ── */}
+      {/* ── Bottom Navigation Bar (Professional Clean Design) ── */}
       <nav
-        className="fixed bottom-0 left-0 right-0 z-50 px-2 py-2 flex items-center justify-around bg-white/95 backdrop-blur-2xl border-t border-slate-200/80 shadow-[0_-8px_30px_rgba(0,0,0,0.06)]"
+        className="fixed bottom-0 left-0 right-0 z-50 px-4 py-2 flex items-center justify-around bg-white/95 backdrop-blur-2xl border-t border-slate-200/80 shadow-[0_-4px_20px_rgba(0,0,0,0.05)] max-w-2xl mx-auto sm:bottom-3 sm:rounded-full sm:border sm:shadow-lg"
         style={{
           paddingBottom: "max(8px, env(safe-area-inset-bottom))",
         }}
@@ -159,29 +159,26 @@ export function Navbar({ activeTab, setActiveTab }: NavbarProps) {
           const Icon = item.icon;
           const isActive = displayActiveTab === item.id;
 
-          if (isActive) {
-            return (
-              <button
-                key={item.id}
-                onClick={() => scrollToSection(item.id)}
-                className="flex items-center gap-1.5 py-1.5 px-3.5 rounded-full bg-gradient-to-r from-[#60A5FA] to-[#3B82F6] text-white shadow-md shadow-blue-400/25 transition-all cursor-pointer border-0"
-              >
-                <Icon className="w-4 h-4 text-white stroke-[2.5]" />
-                <span className="text-[11px] font-bold tracking-wide text-white">
-                  {item.label}
-                </span>
-              </button>
-            );
-          }
-
           return (
             <button
               key={item.id}
               onClick={() => scrollToSection(item.id)}
-              className="flex flex-col items-center justify-center py-1 px-2.5 rounded-full text-slate-400 hover:text-slate-600 transition-colors cursor-pointer border-0 bg-transparent"
+              className="flex flex-col items-center justify-center py-1 px-3 rounded-xl transition-all cursor-pointer border-0 bg-transparent group"
             >
-              <Icon className="w-5 h-5 text-[#93C5FD] stroke-[2]" />
-              <span className="text-[10px] font-semibold tracking-tight mt-0.5 text-slate-400">
+              <Icon
+                className={`w-5 h-5 transition-colors duration-200 ${
+                  isActive
+                    ? "text-[#0058bc] stroke-[2.5] scale-110"
+                    : "text-[#93C5FD] stroke-[2] group-hover:text-[#60A5FA]"
+                }`}
+              />
+              <span
+                className={`text-[10px] sm:text-[11px] tracking-tight mt-1 transition-colors duration-200 ${
+                  isActive
+                    ? "font-extrabold text-[#0058bc]"
+                    : "font-semibold text-slate-500 group-hover:text-slate-700"
+                }`}
+              >
                 {item.label}
               </span>
             </button>
@@ -191,26 +188,25 @@ export function Navbar({ activeTab, setActiveTab }: NavbarProps) {
         {/* Search Button → scrolls to Check Points & Rank */}
         {(() => {
           const isActive = displayActiveTab === "check-points";
-          if (isActive) {
-            return (
-              <button
-                onClick={handleSearchClick}
-                className="flex items-center gap-1.5 py-1.5 px-3.5 rounded-full bg-gradient-to-r from-[#60A5FA] to-[#3B82F6] text-white shadow-md shadow-blue-400/25 transition-all cursor-pointer border-0"
-              >
-                <Search className="w-4 h-4 text-white stroke-[2.5]" />
-                <span className="text-[11px] font-bold tracking-wide text-white">
-                  Search
-                </span>
-              </button>
-            );
-          }
           return (
             <button
               onClick={handleSearchClick}
-              className="flex flex-col items-center justify-center py-1 px-2.5 rounded-full text-slate-400 hover:text-slate-600 transition-colors cursor-pointer border-0 bg-transparent"
+              className="flex flex-col items-center justify-center py-1 px-3 rounded-xl transition-all cursor-pointer border-0 bg-transparent group"
             >
-              <Search className="w-5 h-5 text-[#93C5FD] stroke-[2]" />
-              <span className="text-[10px] font-semibold tracking-tight mt-0.5 text-slate-400">
+              <Search
+                className={`w-5 h-5 transition-colors duration-200 ${
+                  isActive
+                    ? "text-[#0058bc] stroke-[2.5] scale-110"
+                    : "text-[#93C5FD] stroke-[2] group-hover:text-[#60A5FA]"
+                }`}
+              />
+              <span
+                className={`text-[10px] sm:text-[11px] tracking-tight mt-1 transition-colors duration-200 ${
+                  isActive
+                    ? "font-extrabold text-[#0058bc]"
+                    : "font-semibold text-slate-500 group-hover:text-slate-700"
+                }`}
+              >
                 Search
               </span>
             </button>
