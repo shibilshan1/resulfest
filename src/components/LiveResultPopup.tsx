@@ -26,9 +26,33 @@ export function LiveResultPopup({
   const [isDismissed, setIsDismissed] = useState(false);
   const [isAnimating, setIsAnimating] = useState(false);
 
-  // Filter valid results that have points > 0
-  const validResults = results.filter(
-    (r) => r.student_id && (r.points_awarded || 0) > 0
+  // 1. Filter results to 1st place position (position === 1) with valid student & points > 0
+  const firstPlaceResults = results.filter(
+    (r) => r.student_id && r.position === 1 && (r.points_awarded || 0) > 0
+  );
+
+  // 2. Map program IDs to their latest update timestamp
+  const programTimestamps = new Map<string, number>();
+  firstPlaceResults.forEach((r) => {
+    const prog = programs.find((p) => p.id === r.program_id);
+    const time = prog?.updated_at
+      ? new Date(prog.updated_at).getTime()
+      : r.created_at
+      ? new Date(r.created_at).getTime()
+      : 0;
+    const currentMax = programTimestamps.get(r.program_id) || 0;
+    programTimestamps.set(r.program_id, Math.max(currentMax, time));
+  });
+
+  // Sort program IDs by timestamp descending (latest updated first) and take max 3 programs
+  const latest3ProgramIds = Array.from(programTimestamps.entries())
+    .sort((a, b) => b[1] - a[1])
+    .slice(0, 3)
+    .map(([progId]) => progId);
+
+  // 3. Filter validResults to 1st position students belonging to those top 3 latest updated programs
+  const validResults = firstPlaceResults.filter((r) =>
+    latest3ProgramIds.includes(r.program_id)
   );
 
   // Play through all student results ONCE ONLY (1 second per student)

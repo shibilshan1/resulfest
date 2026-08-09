@@ -369,6 +369,12 @@ export default function Home() {
           showAllStudents={showAllStudents}
           setShowAllStudents={handleSetShowAllStudents}
         />
+        <CheckYourPointsRank
+          students={students}
+          teams={teams}
+          results={results}
+          programs={programs}
+        />
         <ImageSlideshow images={slideshowImages} />
       </main>
 
