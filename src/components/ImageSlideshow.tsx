@@ -1,208 +1,147 @@
 "use client";
 
-import { useState, useEffect, useRef } from "react";
+import { useState } from "react";
 import { SlideshowImage } from "@/types";
-import { Sparkles, ChevronLeft, ChevronRight, Play, Pause, Layers } from "lucide-react";
+import { Sparkles, X, Maximize2 } from "lucide-react";
 
 interface ImageSlideshowProps {
   images: SlideshowImage[];
 }
 
 export function ImageSlideshow({ images }: ImageSlideshowProps) {
-  const [activeOffset, setActiveOffset] = useState(0);
-  const [isPlaying, setIsPlaying] = useState(true);
-  const [selectedShape, setSelectedShape] = useState<string>("All");
+  const [selectedImage, setSelectedImage] = useState<SlideshowImage | null>(null);
 
   const slides = images && images.length > 0 ? images : [];
+  if (slides.length === 0) return null;
 
-  // Filter slides by selected shape if filter is active
-  const filteredSlides = slides.filter((slide) => {
-    if (selectedShape === "All") return true;
-    return (slide.aspect_ratio || "portrait") === selectedShape;
-  });
-
-  const displayList = filteredSlides.length > 0 ? filteredSlides : slides;
-
-  // Auto-slide every 2 seconds (2000ms) as requested
-  useEffect(() => {
-    if (!isPlaying || displayList.length <= 1) return;
-
-    const timer = setInterval(() => {
-      setActiveOffset((prev) => (prev + 1) % displayList.length);
-    }, 2000); // 2-second timer interval
-
-    return () => clearInterval(timer);
-  }, [isPlaying, displayList.length]);
-
-  if (displayList.length === 0) return null;
-
-  // Tripled list for infinite looping scroll effect
-  const loopSlides = [...displayList, ...displayList, ...displayList];
+  // Split images into 2 columns for mobile/tablet masonry layout matching user's screenshot
+  const col1 = slides.filter((_, idx) => idx % 2 === 0);
+  const col2 = slides.filter((_, idx) => idx % 2 === 1);
 
   return (
-    <section
-      id="gallery"
-      className="w-full min-h-[90dvh] sm:min-h-0 flex flex-col justify-center max-w-6xl mx-auto px-3 sm:px-4 py-8 space-y-4"
-    >
-      {/* Immersive Section Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 px-1">
-        <div>
-          <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-blue-50 text-[#0062D2] text-[11px] font-black uppercase tracking-widest border border-blue-100 mb-1">
-            <Sparkles className="w-3.5 h-3.5 text-[#0062D2] fill-[#0062D2]/20" />
-            Immersive Showcase
-          </div>
-          <h2 className="text-2xl sm:text-3xl font-black text-slate-900 tracking-tight">
-            Kizil Elma Gallery
-          </h2>
-          <p className="text-xs font-semibold text-slate-500">
-            Multi-shape portrait, square & wide moments in 2-second auto-slide
-          </p>
+    <section id="gallery" className="w-full max-w-5xl mx-auto px-3 sm:px-4 py-8 space-y-5">
+      {/* Section Header */}
+      <div className="text-center space-y-1">
+        <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-slate-100 text-slate-700 text-[11px] font-black uppercase tracking-widest border border-slate-200">
+          <Sparkles className="w-3.5 h-3.5 text-[#0062D2]" />
+          Aesthetic Showcase
+        </div>
+        <h2 className="text-2xl sm:text-3xl font-black text-slate-900 tracking-tight">
+          Visual Gallery
+        </h2>
+        <p className="text-xs font-semibold text-slate-500 max-w-sm mx-auto">
+          Explore curated highlights, moments, and artistic perspectives
+        </p>
+      </div>
+
+      {/* ── Pinterest-Style Masonry Grid (Matching Reference Screenshot) ── */}
+      <div className="grid grid-cols-2 gap-2.5 sm:gap-4 items-start">
+        {/* Column 1 */}
+        <div className="space-y-2.5 sm:space-y-4">
+          {col1.map((img) => (
+            <MasonryCard key={img.id} img={img} onClick={() => setSelectedImage(img)} />
+          ))}
         </div>
 
-        {/* Controls & Shape Filter Chips */}
-        <div className="flex flex-wrap items-center gap-2">
-          {/* Shape filter chips */}
-          <div className="inline-flex items-center gap-1 p-1 rounded-xl bg-slate-100 border border-slate-200 text-xs font-bold">
-            {[
-              { id: "All", label: "All Shapes" },
-              { id: "portrait", label: "Vertical" },
-              { id: "square", label: "Square" },
-              { id: "landscape", label: "Wide" },
-            ].map((shape) => (
-              <button
-                key={shape.id}
-                onClick={() => {
-                  setSelectedShape(shape.id);
-                  setActiveOffset(0);
-                }}
-                className={`px-2.5 py-1 rounded-lg transition-all cursor-pointer ${
-                  selectedShape === shape.id
-                    ? "bg-[#0062D2] text-white shadow-xs"
-                    : "text-slate-600 hover:text-slate-900"
-                }`}
-              >
-                {shape.label}
-              </button>
-            ))}
-          </div>
-
-          {/* Pause / Play 2s Auto */}
-          <button
-            onClick={() => setIsPlaying(!isPlaying)}
-            className="px-3 py-1.5 rounded-xl bg-slate-900 text-white text-xs font-bold flex items-center gap-1.5 cursor-pointer shadow-sm hover:bg-slate-800 transition-colors"
-            title={isPlaying ? "Pause 2s Auto-slide" : "Play 2s Auto-slide"}
-          >
-            {isPlaying ? (
-              <>
-                <Pause className="w-3.5 h-3.5 fill-white" />
-                <span>2s Auto</span>
-              </>
-            ) : (
-              <>
-                <Play className="w-3.5 h-3.5 fill-white" />
-                <span>Paused</span>
-              </>
-            )}
-          </button>
+        {/* Column 2 */}
+        <div className="space-y-2.5 sm:space-y-4">
+          {col2.map((img) => (
+            <MasonryCard key={img.id} img={img} onClick={() => setSelectedImage(img)} />
+          ))}
         </div>
       </div>
 
-      {/* ── Multi-Shape Full Mobile Screen Showcase Container ── */}
-      <div className="relative w-full overflow-hidden rounded-3xl bg-slate-950 p-3 sm:p-4 border border-slate-800 shadow-2xl space-y-3">
-        {/* Main Active Banner Showcase Card */}
-        {(() => {
-          const activeSlide = displayList[activeOffset % displayList.length];
-          const shape = activeSlide.aspect_ratio || "landscape";
-          const aspectClass =
-            shape === "portrait"
-              ? "aspect-[3/4] max-h-[480px]"
-              : shape === "square"
-              ? "aspect-square max-h-[440px]"
-              : "aspect-[16/9] max-h-[400px]";
-
-          return (
-            <div
-              className={`relative w-full ${aspectClass} rounded-2xl sm:rounded-3xl overflow-hidden bg-slate-900 shadow-inner group transition-all duration-700`}
-            >
+      {/* Full-screen Lightbox Image Modal */}
+      {selectedImage && (
+        <div
+          className="fixed inset-0 z-50 bg-black/80 backdrop-blur-md flex items-center justify-center p-4"
+          onClick={() => setSelectedImage(null)}
+        >
+          <div
+            className="relative max-w-2xl w-full bg-white rounded-3xl overflow-hidden shadow-2xl space-y-0"
+            onClick={(e) => e.stopPropagation()}
+          >
+            {/* Image */}
+            <div className="relative w-full max-h-[75vh] bg-slate-950 flex items-center justify-center overflow-hidden">
               <img
-                src={activeSlide.image_url}
-                alt={activeSlide.title || "Gallery Item"}
-                className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
+                src={selectedImage.image_url}
+                alt={selectedImage.title || "Gallery Image"}
+                className="w-full h-full object-contain max-h-[75vh]"
               />
+              <button
+                onClick={() => setSelectedImage(null)}
+                className="absolute top-3 right-3 w-9 h-9 rounded-full bg-black/50 hover:bg-black/80 text-white flex items-center justify-center backdrop-blur-md transition-colors cursor-pointer border border-white/20"
+                title="Close"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
 
-              {/* Dark Overlay Caption */}
-              <div className="absolute inset-0 bg-gradient-to-t from-black/85 via-black/30 to-transparent p-4 sm:p-6 flex flex-col justify-end">
-                <div className="flex items-center gap-2 mb-1.5">
-                  {activeSlide.category && (
-                    <span className="px-2.5 py-0.5 rounded-full bg-white/20 backdrop-blur-md text-[10px] font-black text-white uppercase tracking-wider border border-white/25">
-                      {activeSlide.category}
-                    </span>
-                  )}
-                  <span className="px-2 py-0.5 rounded-full bg-blue-500/40 text-blue-200 text-[10px] font-bold uppercase">
-                    {shape} Shape
+            {/* Details */}
+            {selectedImage.title && (
+              <div className="p-5 bg-white space-y-1">
+                {selectedImage.category && (
+                  <span className="inline-block px-2.5 py-0.5 rounded-full bg-slate-100 text-slate-700 text-[10px] font-black uppercase tracking-wider mb-1">
+                    {selectedImage.category}
                   </span>
-                </div>
-
-                {activeSlide.title && (
-                  <h3 className="text-lg sm:text-2xl font-black text-white leading-tight drop-shadow-md">
-                    {activeSlide.title}
-                  </h3>
                 )}
-                {activeSlide.subtitle && (
-                  <p className="text-xs sm:text-sm text-slate-200 font-medium mt-1 truncate drop-shadow-sm">
-                    {activeSlide.subtitle}
-                  </p>
+                <h3 className="text-lg font-black text-slate-900">{selectedImage.title}</h3>
+                {selectedImage.subtitle && (
+                  <p className="text-xs text-slate-500 font-medium">{selectedImage.subtitle}</p>
                 )}
               </div>
-            </div>
-          );
-        })()}
+            )}
+          </div>
+        </div>
+      )}
+    </section>
+  );
+}
 
-        {/* ── Multi-Shape Horizontal Sliding Strip (Touching with 8px gap) ── */}
-        <div className="relative w-full overflow-hidden pt-1">
-          <div
-            className="flex gap-2 sm:gap-2.5 transition-transform duration-700 ease-out"
-            style={{
-              transform: `translateX(-${(activeOffset % displayList.length) * 38}%)`,
-            }}
-          >
-            {loopSlides.map((slide, index) => {
-              const shape = slide.aspect_ratio || "portrait";
-              const isCurrent = index % displayList.length === activeOffset % displayList.length;
+function MasonryCard({ img, onClick }: { img: SlideshowImage; onClick: () => void }) {
+  const shape = img.aspect_ratio || "portrait";
 
-              const cardAspect =
-                shape === "portrait"
-                  ? "aspect-[3/4] w-[35%] sm:w-[22%]"
-                  : shape === "square"
-                  ? "aspect-square w-[32%] sm:w-[20%]"
-                  : "aspect-[16/10] w-[42%] sm:w-[28%]";
+  // Aspect ratio styles matching reference screenshot
+  const aspectClass =
+    shape === "portrait"
+      ? "aspect-[3/4]"
+      : shape === "landscape"
+      ? "aspect-[16/10]"
+      : "aspect-square";
 
-              return (
-                <div
-                  key={`${slide.id}-${index}`}
-                  onClick={() => setActiveOffset(index % displayList.length)}
-                  className={`relative shrink-0 ${cardAspect} rounded-xl sm:rounded-2xl overflow-hidden border-2 transition-all cursor-pointer group ${
-                    isCurrent
-                      ? "border-[#0062D2] ring-4 ring-blue-500/30 scale-[1.03] shadow-lg z-10"
-                      : "border-white/10 opacity-70 hover:opacity-100 hover:scale-[1.01]"
-                  }`}
-                >
-                  <img
-                    src={slide.image_url}
-                    alt={slide.title || "Slide"}
-                    className="w-full h-full object-cover"
-                  />
-                  <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent p-2 flex flex-col justify-end">
-                    <span className="text-[9px] font-black text-white truncate">
-                      {slide.title || `Item #${(index % displayList.length) + 1}`}
-                    </span>
-                  </div>
-                </div>
-              );
-            })}
+  return (
+    <div
+      onClick={onClick}
+      className="group relative w-full overflow-hidden rounded-xl sm:rounded-2xl border border-slate-200/80 bg-white p-1 sm:p-1.5 shadow-xs hover:shadow-md transition-all duration-300 cursor-pointer"
+    >
+      <div className={`relative w-full ${aspectClass} rounded-lg sm:rounded-xl overflow-hidden bg-slate-100`}>
+        <img
+          src={img.image_url}
+          alt={img.title || "Gallery Image"}
+          className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
+        />
+
+        {/* Hover Icon & Gradient Overlay */}
+        <div className="absolute inset-0 bg-black/20 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
+          <div className="w-8 h-8 rounded-full bg-white/90 text-slate-900 flex items-center justify-center shadow-lg">
+            <Maximize2 className="w-4 h-4" />
           </div>
         </div>
       </div>
-    </section>
+
+      {/* Minimal Subtitle */}
+      {img.title && (
+        <div className="pt-2 px-1 pb-1">
+          <p className="text-[11px] font-black text-slate-900 truncate leading-tight">
+            {img.title}
+          </p>
+          {img.subtitle && (
+            <p className="text-[9px] font-medium text-slate-400 truncate mt-0.5">
+              {img.subtitle}
+            </p>
+          )}
+        </div>
+      )}
+    </div>
   );
 }

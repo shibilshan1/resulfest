@@ -2631,17 +2631,17 @@ export default function AdminPage() {
           </div>
         )}
 
-        {/* TAB 6: Image Slideshow & Gallery Manager */}
+        {/* TAB 6: Aesthetic Gallery & Image Box Manager */}
         {activeAdminTab === "slideshow" && (
           <div className="space-y-6">
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 glass-card p-5 rounded-2xl border border-white/10">
               <div>
                 <h2 className="text-lg font-bold text-slate-100 flex items-center gap-2">
                   <ImageIcon className="w-5 h-5 text-amber-400" />
-                  Image Slideshow & Gallery Manager
+                  Aesthetic Gallery & Image Box Manager
                 </h2>
                 <p className="text-xs text-slate-400 mt-1">
-                  Manage the Apple-style curved boxy image carousel (2-second auto-slide) shown on the homepage
+                  Add, edit, or remove photos in different box shapes (Tall Vertical, Square Box, Wide Landscape) for the homepage gallery
                 </p>
               </div>
 
@@ -2650,7 +2650,7 @@ export default function AdminPage() {
                 className="px-4 py-2.5 rounded-xl bg-amber-500 hover:bg-amber-400 text-slate-950 font-bold text-xs flex items-center justify-center gap-2 transition-all shadow-md active:scale-95 shrink-0"
               >
                 <Plus className="w-4 h-4" />
-                <span>Add New Slide Image</span>
+                <span>Add New Gallery Image</span>
               </button>
             </div>
 
