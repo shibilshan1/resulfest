@@ -79,10 +79,12 @@ export default function AdminPage() {
 
   // Slideshow Manager State
   const [slideImageUrl, setSlideImageUrl] = useState("");
+  const [slideExtraUrls, setSlideExtraUrls] = useState<string[]>([]);
+  const [slideExtraInput, setSlideExtraInput] = useState("");
   const [slideTitle, setSlideTitle] = useState("");
   const [slideSubtitle, setSlideSubtitle] = useState("");
   const [slideCategory, setSlideCategory] = useState("Stage");
-  const [slideAspect, setSlideAspect] = useState("landscape");
+  const [slideAspect, setSlideAspect] = useState("portrait");
   const [editingSlideId, setEditingSlideId] = useState<string | null>(null);
   const [isSlideModalOpen, setIsSlideModalOpen] = useState(false);
   const [deletingSlideId, setDeletingSlideId] = useState<string | null>(null);
@@ -284,51 +286,77 @@ export default function AdminPage() {
   const handleOpenAddSlide = () => {
     setEditingSlideId(null);
     setSlideImageUrl("");
+    setSlideExtraUrls([]);
+    setSlideExtraInput("");
     setSlideTitle("");
     setSlideSubtitle("");
     setSlideCategory("Stage");
-    setSlideAspect("landscape");
+    setSlideAspect("portrait");
     setSlideFileName("");
     setIsSlideModalOpen(true);
   };
 
-  const handleOpenEditSlide = (slide: { id: string; image_url: string; title?: string; subtitle?: string; category?: string; aspect_ratio?: string }) => {
+  const handleOpenEditSlide = (slide: {
+    id: string;
+    image_url: string;
+    images?: string[];
+    title?: string;
+    subtitle?: string;
+    category?: string;
+    aspect_ratio?: string;
+  }) => {
     setEditingSlideId(slide.id);
     setSlideImageUrl(slide.image_url);
+    setSlideExtraUrls(slide.images ? slide.images.filter((u) => u !== slide.image_url) : []);
+    setSlideExtraInput("");
     setSlideTitle(slide.title || "");
     setSlideSubtitle(slide.subtitle || "");
     setSlideCategory(slide.category || "Stage");
-    setSlideAspect(slide.aspect_ratio || "landscape");
+    setSlideAspect(slide.aspect_ratio || "portrait");
     setSlideFileName("");
     setIsSlideModalOpen(true);
+  };
+
+  const handleAddExtraSlideUrl = () => {
+    if (!slideExtraInput.trim()) return;
+    setSlideExtraUrls((prev) => [...prev, slideExtraInput.trim()]);
+    setSlideExtraInput("");
+  };
+
+  const handleRemoveExtraSlideUrl = (index: number) => {
+    setSlideExtraUrls((prev) => prev.filter((_, i) => i !== index));
   };
 
   const handleSaveSlide = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!slideImageUrl.trim()) {
-      setResultSuccessMsg("❌ Please select or paste an image URL!");
+      setResultSuccessMsg("❌ Please select or paste a primary image URL!");
       setTimeout(() => setResultSuccessMsg(""), 3000);
       return;
     }
 
+    const allImages = Array.from(new Set([slideImageUrl.trim(), ...slideExtraUrls.filter((u) => u.trim())]));
+
     if (editingSlideId) {
       await updateSlideshowImage(editingSlideId, {
         image_url: slideImageUrl.trim(),
+        images: allImages,
         title: slideTitle.trim(),
         subtitle: slideSubtitle.trim(),
         category: slideCategory,
         aspect_ratio: slideAspect,
       });
-      setResultSuccessMsg("Slide image updated successfully! 📸");
+      setResultSuccessMsg("Mosaic gallery card updated successfully! 📸");
     } else {
       await addSlideshowImage({
         image_url: slideImageUrl.trim(),
+        images: allImages,
         title: slideTitle.trim(),
         subtitle: slideSubtitle.trim(),
         category: slideCategory,
         aspect_ratio: slideAspect,
       });
-      setResultSuccessMsg("New slide image added successfully! 📸");
+      setResultSuccessMsg("New Mosaic gallery card added successfully! 📸");
     }
 
     setIsSlideModalOpen(false);
@@ -339,7 +367,7 @@ export default function AdminPage() {
     if (!deletingSlideId) return;
     await deleteSlideshowImage(deletingSlideId);
     setDeletingSlideId(null);
-    setResultSuccessMsg("Slide image removed successfully! 🗑️");
+    setResultSuccessMsg("Gallery card removed successfully! 🗑️");
     setTimeout(() => setResultSuccessMsg(""), 4000);
   };
 
@@ -2631,17 +2659,19 @@ export default function AdminPage() {
           </div>
         )}
 
-        {/* TAB 6: Aesthetic Gallery & Image Box Manager */}
+
+
+        {/* TAB 6: Mosaic Gallery & Image Slideshow Manager */}
         {activeAdminTab === "slideshow" && (
           <div className="space-y-6">
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 glass-card p-5 rounded-2xl border border-white/10">
               <div>
                 <h2 className="text-lg font-bold text-slate-100 flex items-center gap-2">
                   <ImageIcon className="w-5 h-5 text-amber-400" />
-                  Aesthetic Gallery & Image Box Manager
+                  Mosaic Gallery & Auto-Sliding Card Manager
                 </h2>
                 <p className="text-xs text-slate-400 mt-1">
-                  Add, edit, or remove photos in different box shapes (Tall Vertical, Square Box, Wide Landscape) for the homepage gallery
+                  Add, edit, or delete Pinterest-style cards with multiple auto-sliding photo slides, custom aspect ratios, and category tags
                 </p>
               </div>
 
@@ -2650,72 +2680,83 @@ export default function AdminPage() {
                 className="px-4 py-2.5 rounded-xl bg-amber-500 hover:bg-amber-400 text-slate-950 font-bold text-xs flex items-center justify-center gap-2 transition-all shadow-md active:scale-95 shrink-0"
               >
                 <Plus className="w-4 h-4" />
-                <span>Add New Gallery Image</span>
+                <span>Add New Gallery Card</span>
               </button>
             </div>
 
             {/* Slides Grid */}
             {slideshowImages.length > 0 ? (
               <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
-                {slideshowImages.map((slide, idx) => (
-                  <div
-                    key={slide.id || idx}
-                    className="glass-card rounded-2xl p-4 space-y-3 border border-white/10 hover:border-amber-400/50 transition-all flex flex-col justify-between"
-                  >
-                    <div className="space-y-3">
-                      {/* Curved Image Thumbnail */}
-                      <div className="relative aspect-[16/10] rounded-xl overflow-hidden bg-slate-900 border border-white/10">
-                        <img
-                          src={slide.image_url}
-                          alt={slide.title || "Slide"}
-                          className="w-full h-full object-cover"
-                        />
-                        {slide.category && (
-                          <span className="absolute top-2 left-2 px-2.5 py-0.5 rounded-full bg-black/60 backdrop-blur-sm text-white font-extrabold text-[10px] uppercase border border-white/20">
-                            {slide.category}
+                {slideshowImages.map((slide, idx) => {
+                  const slideCount = slide.images && slide.images.length > 0 ? slide.images.length : 1;
+                  return (
+                    <div
+                      key={slide.id || idx}
+                      className="glass-card rounded-2xl p-4 space-y-3 border border-white/10 hover:border-amber-400/50 transition-all flex flex-col justify-between"
+                    >
+                      <div className="space-y-3">
+                        {/* Curved Thumbnail */}
+                        <div className="relative aspect-[16/10] rounded-xl overflow-hidden bg-slate-900 border border-white/10">
+                          <img
+                            src={slide.image_url}
+                            alt={slide.title || "Slide"}
+                            className="w-full h-full object-cover"
+                          />
+                          {slide.category && (
+                            <span className="absolute top-2 left-2 px-2.5 py-0.5 rounded-full bg-black/60 backdrop-blur-sm text-white font-extrabold text-[10px] uppercase border border-white/20">
+                              {slide.category}
+                            </span>
+                          )}
+                          <span className="absolute bottom-2 right-2 px-2 py-0.5 rounded-md bg-amber-500/90 text-slate-950 font-black text-[10px]">
+                            {slideCount} {slideCount === 1 ? "Slide" : "Slides"}
                           </span>
-                        )}
+                        </div>
+
+                        {/* Content */}
+                        <div>
+                          <div className="flex items-center justify-between gap-2">
+                            <h4 className="text-sm font-bold text-slate-100 truncate">
+                              {slide.title || "Untitled Card"}
+                            </h4>
+                            <span className="text-[10px] font-mono text-amber-300 uppercase px-1.5 py-0.5 rounded bg-amber-500/10 border border-amber-500/30 shrink-0">
+                              {slide.aspect_ratio || "portrait"}
+                            </span>
+                          </div>
+                          {slide.subtitle && (
+                            <p className="text-xs text-slate-400 truncate mt-0.5">
+                              {slide.subtitle}
+                            </p>
+                          )}
+                        </div>
                       </div>
 
-                      {/* Content */}
-                      <div>
-                        <h4 className="text-sm font-bold text-slate-100 truncate">
-                          {slide.title || "Untitled Slide"}
-                        </h4>
-                        {slide.subtitle && (
-                          <p className="text-xs text-slate-400 truncate mt-0.5">
-                            {slide.subtitle}
-                          </p>
-                        )}
+                      {/* Actions */}
+                      <div className="flex items-center justify-end gap-2 pt-2 border-t border-white/10">
+                        <button
+                          onClick={() => handleOpenEditSlide(slide)}
+                          className="px-3 py-1.5 rounded-lg bg-slate-800 text-slate-200 hover:text-white hover:bg-slate-700 text-xs font-bold flex items-center gap-1 transition-colors"
+                        >
+                          <Edit className="w-3.5 h-3.5" />
+                          <span>Edit</span>
+                        </button>
+
+                        <button
+                          onClick={() => setDeletingSlideId(slide.id)}
+                          className="px-3 py-1.5 rounded-lg bg-red-500/15 text-red-300 hover:bg-red-500/25 border border-red-500/30 text-xs font-bold flex items-center gap-1 transition-colors"
+                        >
+                          <Trash2 className="w-3.5 h-3.5" />
+                          <span>Remove</span>
+                        </button>
                       </div>
                     </div>
-
-                    {/* Actions */}
-                    <div className="flex items-center justify-end gap-2 pt-2 border-t border-white/10">
-                      <button
-                        onClick={() => handleOpenEditSlide(slide)}
-                        className="px-3 py-1.5 rounded-lg bg-slate-800 text-slate-200 hover:text-white hover:bg-slate-700 text-xs font-bold flex items-center gap-1 transition-colors"
-                      >
-                        <Edit className="w-3.5 h-3.5" />
-                        <span>Edit</span>
-                      </button>
-
-                      <button
-                        onClick={() => setDeletingSlideId(slide.id)}
-                        className="px-3 py-1.5 rounded-lg bg-red-500/15 text-red-300 hover:bg-red-500/25 border border-red-500/30 text-xs font-bold flex items-center gap-1 transition-colors"
-                      >
-                        <Trash2 className="w-3.5 h-3.5" />
-                        <span>Remove</span>
-                      </button>
-                    </div>
-                  </div>
-                ))}
+                  );
+                })}
               </div>
             ) : (
               <div className="glass-card rounded-2xl p-10 text-center space-y-3">
                 <ImageIcon className="w-10 h-10 text-slate-600 mx-auto" />
                 <p className="text-sm text-slate-400 font-semibold">
-                  No slideshow images found. Click &quot;Add New Slide Image&quot; to add photos!
+                  No gallery cards found. Click &quot;Add New Gallery Card&quot; to create photo sliders!
                 </p>
               </div>
             )}
@@ -2723,11 +2764,11 @@ export default function AdminPage() {
             {/* Add / Edit Slide Modal */}
             {isSlideModalOpen && (
               <div className="fixed inset-0 z-50 bg-black/70 backdrop-blur-sm flex items-center justify-center p-4">
-                <div className="glass-card w-full max-w-lg rounded-2xl p-6 space-y-4 border border-amber-500/40">
+                <div className="glass-card w-full max-w-lg rounded-2xl p-6 space-y-4 border border-amber-500/40 max-h-[90vh] overflow-y-auto">
                   <div className="flex items-center justify-between pb-2 border-b border-white/10">
                     <h3 className="text-base font-bold text-amber-300 flex items-center gap-2">
                       <ImageIcon className="w-5 h-5 text-amber-400" />
-                      {editingSlideId ? "Edit Slide Image" : "Add New Slide Image"}
+                      {editingSlideId ? "Edit Gallery Card" : "Add New Gallery Card"}
                     </h3>
                     <button
                       onClick={() => setIsSlideModalOpen(false)}
@@ -2738,10 +2779,10 @@ export default function AdminPage() {
                   </div>
 
                   <form onSubmit={handleSaveSlide} className="space-y-4">
-                    {/* Device Upload or URL */}
+                    {/* Device Upload or URL for Primary Cover */}
                     <div className="space-y-2">
                       <label className="text-xs font-bold text-slate-300">
-                        Slide Photo (Upload or Paste URL)
+                        Primary Cover Photo (Upload or Paste URL)
                       </label>
 
                       {slideFileName ? (
@@ -2784,7 +2825,7 @@ export default function AdminPage() {
 
                       <input
                         type="url"
-                        placeholder="Or paste Image URL (https://...)"
+                        placeholder="Or paste Primary Image URL (https://...)"
                         value={slideFileName ? "" : slideImageUrl}
                         onChange={(e) => {
                           setSlideImageUrl(e.target.value);
@@ -2794,20 +2835,55 @@ export default function AdminPage() {
                       />
                     </div>
 
-                    {/* Image Preview */}
-                    {slideImageUrl && (
-                      <div className="relative aspect-[16/9] rounded-xl overflow-hidden border border-white/10 bg-slate-900">
-                        <img
-                          src={slideImageUrl}
-                          alt="Preview"
-                          className="w-full h-full object-cover rounded-xl"
+                    {/* Additional Slide Images for Auto-Sliding inside this Card */}
+                    <div className="space-y-2 pt-1 border-t border-white/10">
+                      <label className="text-xs font-bold text-slate-300 flex items-center justify-between">
+                        <span>Additional Auto-Sliding Images in Card</span>
+                        <span className="text-[10px] text-amber-400 font-normal">
+                          {slideExtraUrls.length + 1} Total Slides
+                        </span>
+                      </label>
+
+                      {slideExtraUrls.map((url, i) => (
+                        <div key={i} className="flex items-center gap-2 bg-slate-900/80 p-2 rounded-xl border border-white/10">
+                          <img src={url} alt="" className="w-8 h-8 rounded-lg object-cover border border-white/20 shrink-0" />
+                          <input
+                            type="text"
+                            readOnly
+                            value={url}
+                            className="flex-1 text-[11px] bg-transparent text-slate-300 truncate focus:outline-none"
+                          />
+                          <button
+                            type="button"
+                            onClick={() => handleRemoveExtraSlideUrl(i)}
+                            className="p-1 rounded-lg text-red-400 hover:bg-red-500/20"
+                          >
+                            <X className="w-4 h-4" />
+                          </button>
+                        </div>
+                      ))}
+
+                      <div className="flex items-center gap-2">
+                        <input
+                          type="url"
+                          placeholder="Paste additional image URL for slideshow..."
+                          value={slideExtraInput}
+                          onChange={(e) => setSlideExtraInput(e.target.value)}
+                          className="flex-1 px-3 py-2 rounded-xl bg-slate-900 border border-white/10 text-xs text-slate-100 focus:outline-none focus:border-amber-400"
                         />
+                        <button
+                          type="button"
+                          onClick={handleAddExtraSlideUrl}
+                          className="px-3 py-2 rounded-xl bg-amber-500/20 text-amber-300 hover:bg-amber-500/30 text-xs font-bold border border-amber-500/40 shrink-0"
+                        >
+                          + Add Slide
+                        </button>
                       </div>
-                    )}
+                    </div>
 
                     {/* Slide Title */}
                     <div className="space-y-1">
-                      <label className="text-xs font-bold text-slate-300">Slide Title</label>
+                      <label className="text-xs font-bold text-slate-300">Card Title</label>
                       <input
                         type="text"
                         placeholder="e.g. Grand Inauguration Ceremony"
@@ -2819,7 +2895,7 @@ export default function AdminPage() {
 
                     {/* Slide Subtitle */}
                     <div className="space-y-1">
-                      <label className="text-xs font-bold text-slate-300">Slide Subtitle / Description</label>
+                      <label className="text-xs font-bold text-slate-300">Card Subtitle / Description</label>
                       <input
                         type="text"
                         placeholder="e.g. Kizil Elma Stage Performances & Highlights"
@@ -2841,19 +2917,22 @@ export default function AdminPage() {
                           <option value="Stage">Stage</option>
                           <option value="Off-Stage">Off-Stage</option>
                           <option value="General">General</option>
+                          <option value="Highlights">Highlights</option>
                         </select>
                       </div>
 
                       <div className="space-y-1">
-                        <label className="text-xs font-bold text-slate-300">Card Box Shape</label>
+                        <label className="text-xs font-bold text-slate-300">Card Aspect Ratio Shape</label>
                         <select
                           value={slideAspect}
                           onChange={(e) => setSlideAspect(e.target.value)}
                           className="w-full px-3.5 py-2.5 rounded-xl bg-slate-900 border border-white/10 text-xs text-slate-100 focus:outline-none focus:border-amber-400"
                         >
-                          <option value="portrait">Vertical (Tall Portrait 3:4)</option>
+                          <option value="portrait">Portrait Rectangular (3:4)</option>
                           <option value="square">Square Box (1:1)</option>
-                          <option value="landscape">Wide Showcase (16:9)</option>
+                          <option value="vertical">Vertical Standard (4:5)</option>
+                          <option value="tall">Tall Full Screen (9:16)</option>
+                          <option value="landscape">Wide Showcase (16:10)</option>
                         </select>
                       </div>
                     </div>
@@ -2871,7 +2950,7 @@ export default function AdminPage() {
                         type="submit"
                         className="px-4 py-2 rounded-xl bg-amber-500 text-slate-950 font-bold text-xs hover:bg-amber-400 transition-colors shadow-md"
                       >
-                        {editingSlideId ? "Save Changes" : "Add Slide Image"}
+                        {editingSlideId ? "Save Changes" : "Add Gallery Card"}
                       </button>
                     </div>
                   </form>
@@ -2889,10 +2968,10 @@ export default function AdminPage() {
                     </div>
                     <div>
                       <h3 className="text-base font-bold text-red-200">
-                        Remove Slide Image?
+                        Remove Gallery Card?
                       </h3>
                       <p className="text-xs text-slate-400 mt-0.5">
-                        Are you sure you want to remove this slide image from the homepage gallery? This action cannot be undone.
+                        Are you sure you want to remove this card from the homepage gallery? This action cannot be undone.
                       </p>
                     </div>
                   </div>
@@ -2911,7 +2990,7 @@ export default function AdminPage() {
                       className="px-4 py-2 rounded-xl bg-red-600 text-white font-bold text-xs hover:bg-red-500 flex items-center gap-1.5 transition-colors"
                     >
                       <Trash2 className="w-3.5 h-3.5" />
-                      Yes, Remove Image
+                      Yes, Remove Card
                     </button>
                   </div>
                 </div>

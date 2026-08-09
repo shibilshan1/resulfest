@@ -52,10 +52,10 @@ export interface ScoreProgressionPoint {
 export interface SlideshowImage {
   id: string;
   image_url: string;
+  images?: string[];
   title?: string;
   subtitle?: string;
   category?: string;
-  aspect_ratio?: "portrait" | "square" | "landscape" | string;
+  aspect_ratio?: "portrait" | "square" | "landscape" | "tall" | "vertical" | string;
   created_at?: string;
 }
-
