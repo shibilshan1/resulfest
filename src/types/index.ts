@@ -57,5 +57,6 @@ export interface SlideshowImage {
   subtitle?: string;
   category?: string;
   aspect_ratio?: "portrait" | "square" | "landscape" | "tall" | "vertical" | string;
+  instagram_url?: string;
   created_at?: string;
 }

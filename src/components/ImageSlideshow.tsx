@@ -2,7 +2,25 @@
 
 import { useState, useEffect } from "react";
 import { SlideshowImage } from "@/types";
-import { Sparkles, X, ChevronLeft, ChevronRight, Maximize2 } from "lucide-react";
+import { Sparkles, X, ChevronLeft, ChevronRight } from "lucide-react";
+
+export function InstagramIcon({ className = "w-4 h-4" }: { className?: string }) {
+  return (
+    <svg
+      className={className}
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+    >
+      <rect x="2" y="2" width="20" height="20" rx="5" ry="5" />
+      <path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z" />
+      <line x1="17.5" y1="6.5" x2="17.51" y2="6.5" />
+    </svg>
+  );
+}
 
 interface ImageSlideshowProps {
   images: SlideshowImage[];
@@ -140,17 +158,32 @@ export function ImageSlideshow({ images }: ImageSlideshowProps) {
             </div>
 
             {/* Details Footer */}
-            {selectedImage.title && (
-              <div className="p-5 bg-slate-900 text-white space-y-1 border-t border-white/10">
+            {selectedImage && (
+              <div className="p-5 bg-slate-900 text-white space-y-2 border-t border-white/10">
                 <div className="flex items-center justify-between gap-2">
-                  <span className="inline-block px-2.5 py-0.5 rounded-full bg-amber-500/20 text-amber-300 text-[10px] font-black uppercase tracking-wider border border-amber-500/30">
-                    {selectedImage.category || "Gallery"}
-                  </span>
+                  <div className="flex items-center gap-2">
+                    <span className="inline-block px-2.5 py-0.5 rounded-full bg-amber-500/20 text-amber-300 text-[10px] font-black uppercase tracking-wider border border-amber-500/30">
+                      {selectedImage.category || "Gallery"}
+                    </span>
+                    {selectedImage.instagram_url && (
+                      <a
+                        href={selectedImage.instagram_url}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-gradient-to-r from-purple-600 via-pink-600 to-amber-500 text-white text-[11px] font-black hover:opacity-90 transition-opacity shadow-sm"
+                      >
+                        <InstagramIcon className="w-3.5 h-3.5" />
+                        <span>View on Instagram</span>
+                      </a>
+                    )}
+                  </div>
                   <span className="text-[11px] font-semibold text-slate-400">
                     Slide {lightboxSlideIndex + 1} of {activeSlideImages.length}
                   </span>
                 </div>
-                <h3 className="text-lg font-black text-slate-100">{selectedImage.title}</h3>
+                {selectedImage.title && (
+                  <h3 className="text-lg font-black text-slate-100">{selectedImage.title}</h3>
+                )}
                 {selectedImage.subtitle && (
                   <p className="text-xs text-slate-400 font-medium">{selectedImage.subtitle}</p>
                 )}
@@ -222,13 +255,34 @@ function MasonryCard({
           />
         ))}
 
+        {/* Optional Instagram Link Badge */}
+        {img.instagram_url && (
+          <a
+            href={img.instagram_url}
+            target="_blank"
+            rel="noopener noreferrer"
+            onClick={(e) => e.stopPropagation()}
+            className="absolute top-3 right-3 z-20 w-8 h-8 rounded-full bg-gradient-to-tr from-amber-500 via-pink-600 to-purple-600 text-white backdrop-blur-md flex items-center justify-center border border-white/30 shadow-md transition-transform hover:scale-110 active:scale-95"
+            title="View on Instagram"
+          >
+            <InstagramIcon className="w-4 h-4 text-white" />
+          </a>
+        )}
+
         {/* Hover Dark Overlay with Title */}
         <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex flex-col justify-end p-4 z-10">
-          {img.category && (
-            <span className="inline-block self-start px-2 py-0.5 rounded-full bg-white/20 backdrop-blur-md text-white text-[9px] font-black uppercase tracking-wider mb-1 border border-white/30">
-              {img.category}
-            </span>
-          )}
+          <div className="flex items-center justify-between gap-1 mb-1">
+            {img.category && (
+              <span className="inline-block self-start px-2 py-0.5 rounded-full bg-white/20 backdrop-blur-md text-white text-[9px] font-black uppercase tracking-wider border border-white/30">
+                {img.category}
+              </span>
+            )}
+            {img.instagram_url && (
+              <span className="inline-flex items-center gap-1 text-[9px] font-extrabold text-pink-300 bg-black/40 px-2 py-0.5 rounded-full border border-pink-400/30">
+                <InstagramIcon className="w-2.5 h-2.5" /> Instagram
+              </span>
+            )}
+          </div>
           {img.title && (
             <h4 className="text-xs sm:text-sm font-extrabold text-white truncate drop-shadow-md">
               {img.title}

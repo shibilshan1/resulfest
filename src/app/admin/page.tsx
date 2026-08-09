@@ -32,6 +32,7 @@ import {
   X,
   ImageIcon,
 } from "lucide-react";
+import { InstagramIcon } from "@/components/ImageSlideshow";
 import Link from "next/link";
 
 export interface WinnerRow {
@@ -85,11 +86,13 @@ export default function AdminPage() {
   const [slideSubtitle, setSlideSubtitle] = useState("");
   const [slideCategory, setSlideCategory] = useState("Stage");
   const [slideAspect, setSlideAspect] = useState("portrait");
+  const [slideInstagramUrl, setSlideInstagramUrl] = useState("");
   const [editingSlideId, setEditingSlideId] = useState<string | null>(null);
   const [isSlideModalOpen, setIsSlideModalOpen] = useState(false);
   const [deletingSlideId, setDeletingSlideId] = useState<string | null>(null);
   const [slideFileName, setSlideFileName] = useState("");
   const slideFileInputRef = useRef<HTMLInputElement>(null);
+  const multipleSlideFileInputRef = useRef<HTMLInputElement>(null);
 
   // Edit Result state
   const [editingResultId, setEditingResultId] = useState<string | null>(null);
@@ -292,6 +295,7 @@ export default function AdminPage() {
     setSlideSubtitle("");
     setSlideCategory("Stage");
     setSlideAspect("portrait");
+    setSlideInstagramUrl("");
     setSlideFileName("");
     setIsSlideModalOpen(true);
   };
@@ -304,6 +308,7 @@ export default function AdminPage() {
     subtitle?: string;
     category?: string;
     aspect_ratio?: string;
+    instagram_url?: string;
   }) => {
     setEditingSlideId(slide.id);
     setSlideImageUrl(slide.image_url);
@@ -313,6 +318,7 @@ export default function AdminPage() {
     setSlideSubtitle(slide.subtitle || "");
     setSlideCategory(slide.category || "Stage");
     setSlideAspect(slide.aspect_ratio || "portrait");
+    setSlideInstagramUrl(slide.instagram_url || "");
     setSlideFileName("");
     setIsSlideModalOpen(true);
   };
@@ -325,6 +331,30 @@ export default function AdminPage() {
 
   const handleRemoveExtraSlideUrl = (index: number) => {
     setSlideExtraUrls((prev) => prev.filter((_, i) => i !== index));
+  };
+
+  const handleMultipleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const files = Array.from(e.target.files || []);
+    if (files.length === 0) return;
+
+    files.forEach((file, index) => {
+      if (!file.type.startsWith("image/")) return;
+      const reader = new FileReader();
+      reader.onload = (event) => {
+        const result = event.target?.result as string;
+        if (result) {
+          setSlideImageUrl((prev) => {
+            if (!prev.trim()) {
+              setSlideFileName(file.name);
+              return result;
+            }
+            return prev;
+          });
+          setSlideExtraUrls((prev) => Array.from(new Set([...prev, result])));
+        }
+      };
+      reader.readAsDataURL(file);
+    });
   };
 
   const handleSaveSlide = async (e: React.FormEvent) => {
@@ -345,6 +375,7 @@ export default function AdminPage() {
         subtitle: slideSubtitle.trim(),
         category: slideCategory,
         aspect_ratio: slideAspect,
+        instagram_url: slideInstagramUrl.trim(),
       });
       setResultSuccessMsg("Mosaic gallery card updated successfully! 📸");
     } else {
@@ -355,6 +386,7 @@ export default function AdminPage() {
         subtitle: slideSubtitle.trim(),
         category: slideCategory,
         aspect_ratio: slideAspect,
+        instagram_url: slideInstagramUrl.trim(),
       });
       setResultSuccessMsg("New Mosaic gallery card added successfully! 📸");
     }
