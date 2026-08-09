@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useRef, useCallback } from "react";
 import { useFestStore } from "@/lib/store";
-import { Team } from "@/types";
+import { Team, Student, Result, Program } from "@/types";
 import { Navbar } from "@/components/Navbar";
 import { Hero } from "@/components/Hero";
 import { Scoreboard } from "@/components/Scoreboard";
@@ -10,6 +10,8 @@ import { ResultsAccordion } from "@/components/ResultsAccordion";
 import { Leaderboard } from "@/components/Leaderboard";
 import { CheckYourPointsRank } from "@/components/CheckYourPointsRank";
 import { TeamDetailModal } from "@/components/TeamDetailModal";
+import { LiveResultPopup } from "@/components/LiveResultPopup";
+import { StudentPointsModal } from "@/components/StudentPointsModal";
 import Link from "next/link";
 
 interface AppHistoryState {
@@ -29,6 +31,8 @@ export default function Home() {
   const [showAllPrograms, setShowAllPrograms] = useState(false);
   const [showAllStudents, setShowAllStudents] = useState(false);
   const [expandedProgramId, setExpandedProgramId] = useState<string | null>(null);
+  const [activeLivePopupResult, setActiveLivePopupResult] = useState<Result | null>(null);
+  const [activePopupStudent, setActivePopupStudent] = useState<Student | null>(null);
 
   const {
     teams,
@@ -39,6 +43,16 @@ export default function Home() {
     isConfigured,
     getScoreProgressionData,
   } = useFestStore();
+
+  // Auto trigger a live result popup when results exist
+  useEffect(() => {
+    if (!isLoading && results.length > 0 && students.length > 0 && !activeLivePopupResult) {
+      const topResult = results.find((r) => r.position === 1 && (r.points_awarded || 0) > 0) || results[0];
+      if (topResult) {
+        setActiveLivePopupResult(topResult);
+      }
+    }
+  }, [isLoading, results, students]);
 
   const isPopStateRef = useRef(false);
   const initialTeamIdRef = useRef<string | null>(null);
@@ -394,6 +408,33 @@ export default function Home() {
           </div>
         </div>
       </footer>
+
+      {/* Live Result Notification Popup when result is outed */}
+      {activeLivePopupResult && (() => {
+        const popupStud = students.find((s) => s.id === activeLivePopupResult.student_id);
+        const popupProg = programs.find((p) => p.id === activeLivePopupResult.program_id);
+        const popupTeam = teams.find((t) => t.id === (activeLivePopupResult.team_id || popupStud?.team_id));
+        return (
+          <LiveResultPopup
+            result={activeLivePopupResult}
+            program={popupProg || null}
+            student={popupStud || null}
+            team={popupTeam || null}
+            onClose={() => setActiveLivePopupResult(null)}
+            onOpenFullModal={(stud) => setActivePopupStudent(stud)}
+          />
+        );
+      })()}
+
+      {/* Full Student Points Breakdown Modal */}
+      <StudentPointsModal
+        student={activePopupStudent}
+        teams={teams}
+        programs={programs}
+        results={results}
+        allStudents={students}
+        onClose={() => setActivePopupStudent(null)}
+      />
     </div>
   );
 }

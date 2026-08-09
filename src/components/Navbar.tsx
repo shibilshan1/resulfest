@@ -18,164 +18,92 @@ export function Navbar({ activeTab, setActiveTab }: NavbarProps) {
   };
 
   const navItems = [
-    { id: "hero",        label: "Home",        icon: Home },
-    { id: "scoreboard",  label: "Scoreboard",  icon: Trophy },
-    { id: "results",     label: "Events",      icon: CalendarDays },
-    { id: "check-points", label: "Search",      icon: Search },
+    { id: "hero",         label: "Home",        icon: Home },
+    { id: "scoreboard",   label: "Scoreboard",  icon: Trophy },
+    { id: "results",      label: "Events",      icon: CalendarDays },
+    { id: "check-points",  label: "Search",      icon: Search },
   ];
 
   return (
     <>
-      {/* ── Top Header ── */}
+      {/* ── Top Header matching screenshot ── */}
       <header
         style={{
-          background: "#fff",
-          borderBottom: "1px solid #E4EAF4",
-          boxShadow: "0 2px 12px rgba(30,64,175,0.06)",
-          WebkitBackfaceVisibility: "hidden",
-          backfaceVisibility: "hidden",
-          transform: "translateZ(0)",
+          background: "#FFFFFF",
+          borderBottom: "1px solid #F1F5F9",
+          boxShadow: "0 1px 8px rgba(0,0,0,0.03)",
         }}
-        className="sticky top-0 z-50 w-full px-5 py-4"
+        className="sticky top-0 z-40 w-full px-4 py-3"
       >
         <div className="max-w-6xl mx-auto flex items-center justify-between">
-          {/* Brand with Official Logo PNG */}
+          {/* Left: Hamburger menu + Title */}
           <div
             onClick={() => scrollToSection("hero")}
             className="flex items-center gap-3 cursor-pointer"
           >
-            <img
-              src="/logo.png"
-              alt="Kizil Elma 2K26"
-              style={{
-                height: 40,
-                width: "auto",
-                objectFit: "contain",
-              }}
-            />
-            <div className="flex flex-col">
-              <h1
-                style={{
-                  color: "#1A56DB",
-                  fontWeight: 900,
-                  fontSize: "20px",
-                  lineHeight: 1.1,
-                  letterSpacing: "-0.5px",
-                }}
-              >
-                Kizil&nbsp;Elma
-              </h1>
-              <span
-                style={{
-                  fontSize: "9px",
-                  fontWeight: 700,
-                  color: "#9CA3AF",
-                  letterSpacing: "0.08em",
-                  textTransform: "uppercase",
-                }}
-              >
-                TALENTS MEET 2K26
-              </span>
-            </div>
+            <button
+              className="p-1 rounded-lg text-slate-700 hover:bg-slate-100 transition-colors"
+              title="Menu"
+            >
+              <Menu className="w-6 h-6 stroke-[2.2]" />
+            </button>
+
+            <h1 className="text-xl sm:text-2xl font-bold text-slate-900 tracking-tight leading-none">
+              Kizil Elma
+            </h1>
           </div>
 
-          {/* Desktop nav links */}
-          <div className="hidden md:flex items-center gap-6">
-            {navItems.slice(0, 3).map((item) => (
-              <button
-                key={item.id}
-                onClick={() => scrollToSection(item.id)}
-                style={{
-                  color: activeTab === item.id ? "#1A56DB" : "#6B7280",
-                  fontWeight: activeTab === item.id ? 700 : 500,
-                  fontSize: "14px",
-                  borderTop: "none",
-                  borderLeft: "none",
-                  borderRight: "none",
-                  borderBottom: activeTab === item.id ? "2px solid #1A56DB" : "2px solid transparent",
-                  paddingBottom: "2px",
-                  background: "none",
-                  cursor: "pointer",
-                  transition: "color 0.2s",
-                }}
-              >
-                {item.label}
-              </button>
-            ))}
-          </div>
-
-          {/* Right Header Actions: Admin link & 3-Dots Menu */}
-          <div className="flex items-center gap-3">
+          {/* Right Header Actions: Round Profile Avatar & Admin */}
+          <div className="flex items-center gap-2.5">
             <Link
               href="/admin"
-              style={{
-                width: 38,
-                height: 38,
-                borderRadius: "50%",
-                background: "linear-gradient(135deg, #1A56DB, #3b82f6)",
-                display: "flex",
-                alignItems: "center",
-                justifyContent: "center",
-                boxShadow: "0 4px 12px rgba(26,86,219,0.3)",
-              }}
+              className="relative w-9 h-9 sm:w-10 sm:h-10 rounded-full border-2 border-[#0062D2] p-0.5 bg-white shadow-xs transition-transform hover:scale-105 flex items-center justify-center overflow-hidden"
               title="Admin Portal"
             >
-              <User className="w-4 h-4 text-white" />
+              <img
+                src="/logo.png"
+                alt="Profile"
+                className="w-full h-full object-cover rounded-full"
+              />
             </Link>
-            <button
-              onClick={() => scrollToSection("scoreboard")}
-              className="p-2 rounded-xl bg-slate-50 hover:bg-slate-100 text-slate-600 transition-colors cursor-pointer border border-slate-200/60"
-              title="More Options"
-            >
-              <MoreVertical className="w-4 h-4 text-slate-600" />
-            </button>
           </div>
         </div>
       </header>
 
-      {/* ── Bottom Navigation (Mobile Tab Bar) ── */}
+      {/* ── Bottom Navigation Bar matching screenshot ── */}
       <nav
-        className="bottom-nav md:hidden fixed bottom-0 left-0 right-0 z-50 px-4 pt-2 flex items-center justify-around"
+        className="bottom-nav md:hidden fixed bottom-0 left-0 right-0 z-40 px-3 py-2 flex items-center justify-around bg-white border-t border-slate-100 shadow-lg"
         style={{
-          background: "#FFFFFF",
-          borderTop: "1px solid #E4EAF4",
-          boxShadow: "0 -4px 20px rgba(30, 64, 175, 0.12)",
-          paddingBottom: "max(10px, env(safe-area-inset-bottom))",
-          WebkitBackfaceVisibility: "hidden",
-          backfaceVisibility: "hidden",
-          transform: "translateZ(0)",
+          paddingBottom: "max(8px, env(safe-area-inset-bottom))",
         }}
       >
         {navItems.map((item) => {
           const Icon = item.icon;
           const isActive = activeTab === item.id;
 
+          if (isActive) {
+            return (
+              <button
+                key={item.id}
+                onClick={() => scrollToSection(item.id)}
+                className="flex flex-col items-center justify-center py-1.5 px-5 rounded-full bg-[#0062D2] text-white shadow-md shadow-blue-600/30 transition-all cursor-pointer border-0"
+              >
+                <Icon className="w-5 h-5 text-white stroke-[2.5]" />
+                <span className="text-[10px] font-extrabold tracking-wide mt-0.5 text-white">
+                  {item.label}
+                </span>
+              </button>
+            );
+          }
+
           return (
             <button
               key={item.id}
               onClick={() => scrollToSection(item.id)}
-              className="flex flex-col items-center gap-1 py-1 px-3"
-              style={{
-                background: "none",
-                border: "none",
-                cursor: "pointer",
-                position: "relative",
-              }}
+              className="flex flex-col items-center justify-center py-1.5 px-3 rounded-full text-slate-500 hover:text-slate-800 transition-colors cursor-pointer border-0 bg-transparent"
             >
-              <Icon
-                className="w-5 h-5"
-                style={{
-                  color: isActive ? "#1A56DB" : "#9CA3AF",
-                  transition: "color 0.2s",
-                }}
-              />
-              <span
-                style={{
-                  fontSize: 10,
-                  fontWeight: isActive ? 700 : 500,
-                  color: isActive ? "#1A56DB" : "#9CA3AF",
-                }}
-              >
+              <Icon className="w-5 h-5 text-slate-500 stroke-[2]" />
+              <span className="text-[10px] font-semibold tracking-tight mt-0.5 text-slate-500">
                 {item.label}
               </span>
             </button>
