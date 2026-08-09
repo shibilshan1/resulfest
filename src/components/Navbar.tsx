@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { Trophy, Home, Menu, Search, Award } from "lucide-react";
+import { Trophy, Home, Menu, Award, Sparkles } from "lucide-react";
 
 interface NavbarProps {
   activeTab: string;
@@ -18,10 +18,10 @@ export function Navbar({ activeTab, setActiveTab }: NavbarProps) {
   };
 
   const navItems = [
-    { id: "hero",         label: "Home",        icon: Home },
-    { id: "results",      label: "Stage",       icon: Award },
-    { id: "scoreboard",   label: "Scoreboard",  icon: Trophy },
-    { id: "check-points",  label: "Search",      icon: Search },
+    { id: "hero",       label: "Home",       icon: Home },
+    { id: "results",    label: "Stage",      icon: Award },
+    { id: "scoreboard", label: "Scoreboard", icon: Trophy },
+    { id: "gallery",    label: "Gallery",    icon: Sparkles },
   ];
 
   return (
