@@ -339,6 +339,14 @@ export default function AdminPage() {
 
     files.forEach((file, index) => {
       if (!file.type.startsWith("image/")) return;
+
+      // Validate file size (max 40MB)
+      if (file.size > 40 * 1024 * 1024) {
+        setResultSuccessMsg(`❌ "${file.name}" is too large! Max 40MB per image allowed.`);
+        setTimeout(() => setResultSuccessMsg(""), 4000);
+        return;
+      }
+
       const reader = new FileReader();
       reader.onload = (event) => {
         const result = event.target?.result as string;
@@ -419,9 +427,9 @@ export default function AdminPage() {
       return;
     }
 
-    // Validate file size (max 6MB)
-    if (file.size > 6 * 1024 * 1024) {
-      setResultSuccessMsg("❌ Image too large! Max 6MB allowed.");
+    // Validate file size (max 40MB)
+    if (file.size > 40 * 1024 * 1024) {
+      setResultSuccessMsg("❌ Image too large! Max 40MB allowed.");
       setTimeout(() => setResultSuccessMsg(""), 4000);
       return;
     }
@@ -2267,7 +2275,7 @@ export default function AdminPage() {
                         <span>Click to Upload Photo from Device</span>
                       </button>
                     )}
-                    <p className="text-[10px] text-slate-500">Supports JPG, PNG, GIF, WebP (max 6MB)</p>
+                    <p className="text-[10px] text-slate-500">Supports JPG, PNG, GIF, WebP (max 40MB)</p>
                   </div>
                   
                   {/* Avatar Presets */}
@@ -2386,8 +2394,8 @@ export default function AdminPage() {
                                 setTimeout(() => setResultSuccessMsg(""), 3000);
                                 return;
                               }
-                              if (file.size > 6 * 1024 * 1024) {
-                                setResultSuccessMsg("❌ Image too large! Max 6MB");
+                              if (file.size > 40 * 1024 * 1024) {
+                                setResultSuccessMsg("❌ Image too large! Max 40MB");
                                 setTimeout(() => setResultSuccessMsg(""), 3000);
                                 return;
                               }
@@ -2578,7 +2586,7 @@ export default function AdminPage() {
                             <span>Click to Upload Photo from Device</span>
                           </button>
                         )}
-                        <p className="text-[10px] text-slate-500">Supports JPG, PNG, GIF, WebP (max 6MB)</p>
+                        <p className="text-[10px] text-slate-500">Supports JPG, PNG, GIF, WebP (max 40MB)</p>
                       </div>
 
                       {/* Current Photo Preview */}
@@ -2911,6 +2919,24 @@ export default function AdminPage() {
                           + Add Slide
                         </button>
                       </div>
+
+                      {/* Upload Additional Slides from Device */}
+                      <button
+                        type="button"
+                        onClick={() => multipleSlideFileInputRef.current?.click()}
+                        className="w-full py-2 rounded-xl border border-dashed border-slate-600 bg-slate-900/50 hover:bg-slate-800/70 text-slate-400 hover:text-amber-300 text-xs font-bold transition-all flex items-center justify-center gap-2"
+                      >
+                        <Upload className="w-3.5 h-3.5" />
+                        <span>Or Upload Additional Images from Device</span>
+                      </button>
+                      <input
+                        ref={multipleSlideFileInputRef}
+                        type="file"
+                        accept="image/*"
+                        multiple
+                        className="hidden"
+                        onChange={handleMultipleFileUpload}
+                      />
                     </div>
 
                     {/* Slide Title */}

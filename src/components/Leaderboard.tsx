@@ -422,36 +422,7 @@ export function Leaderboard({
             );
           })}
 
-          {/* Category/Grade Pills: Bakalooria & Sanaviyya */}
-          {[
-            { id: "Bakalooria", label: "🎓 Bakalooria" },
-            { id: "Sanaviyya", label: "📖 Sanaviyya" },
-          ].map((cat) => {
-            const isActive = selectedCategoryFilter === cat.id && selectedTeamFilter === "All";
-            return (
-              <button
-                key={cat.id}
-                onClick={() => {
-                  setSelectedCategoryFilter(cat.id);
-                  setSelectedTeamFilter("All");
-                }}
-                className={`filter-chip${isActive ? " active" : ""}`}
-                style={
-                  isActive
-                    ? {
-                        background: "linear-gradient(135deg, #1A56DB 0%, #1D4ED8 100%)",
-                        color: "#ffffff",
-                        borderColor: "#1E40AF",
-                        fontWeight: 800,
-                        boxShadow: "0 4px 12px rgba(26, 86, 219, 0.3)",
-                      }
-                    : {}
-                }
-              >
-                {cat.label}
-              </button>
-            );
-          })}
+
         </div>
       </div>
 

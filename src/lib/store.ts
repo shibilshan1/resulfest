@@ -30,7 +30,7 @@ export function useFestStore() {
   const [rawStudents, setRawStudents] = useState<Student[]>([]);
   const [programs, setPrograms] = useState<Program[]>([]);
   const [results, setResults] = useState<Result[]>([]);
-  const [slideshowImages, setSlideshowImages] = useState<SlideshowImage[]>(INITIAL_SLIDESHOW_IMAGES);
+  const [slideshowImages, setSlideshowImages] = useState<SlideshowImage[]>([]);
   const [isLoading, setIsLoading] = useState(true);
 
   // ─── Data loading & Firebase Realtime Listeners ────────────────────
@@ -167,7 +167,7 @@ export function useFestStore() {
         const loaded = snapshot.docs.map(
           (docSnap: QueryDocumentSnapshot<DocumentData>) => docSnap.data() as SlideshowImage
         );
-        setSlideshowImages(loaded.length > 0 ? loaded : INITIAL_SLIDESHOW_IMAGES);
+        setSlideshowImages(loaded);
       },
       (err: unknown) => {
         console.error("Slideshow listener error:", err);

@@ -52,16 +52,9 @@ export function ImageSlideshow({ images }: ImageSlideshowProps) {
     <section id="gallery" className="w-full max-w-5xl mx-auto px-3 sm:px-4 py-10 space-y-6">
       {/* Section Header */}
       <div className="text-center space-y-1.5">
-        <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-slate-100 text-slate-700 text-[11px] font-black uppercase tracking-widest border border-slate-200 shadow-xs">
-          <Sparkles className="w-3.5 h-3.5 text-[#0062D2]" />
-          Aesthetic Mosaic Gallery
-        </div>
         <h2 className="text-2xl sm:text-4xl font-extrabold text-slate-900 tracking-tight">
-          Visual Showcase & Highlights
+          Highlights
         </h2>
-        <p className="text-xs sm:text-sm font-semibold text-slate-500 max-w-md mx-auto">
-          Explore curated festival moments with dynamic auto-sliding photo cards
-        </p>
       </div>
 
       {/* ── Pinterest-Style Masonry Grid (Matching Reference HTML Structure) ── */}
