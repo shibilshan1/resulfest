@@ -1,8 +1,8 @@
 "use client";
 
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, useMemo, useCallback } from "react";
 import { Student, Team, Program, Result } from "@/types";
-import { Search, Trophy, Crown, Star, ChevronDown, ArrowLeft, X, Sparkles, User } from "lucide-react";
+import { Search, Trophy, Crown, Star, ChevronDown, ArrowLeft, X, Sparkles, User, Filter } from "lucide-react";
 
 interface LeaderboardProps {
   students: Student[];
@@ -96,7 +96,7 @@ export function Leaderboard({
   const [searchQuery, setSearchQuery] = useState("");
   const [checkQuery, setCheckQuery] = useState("");
   const [selectedTeamFilter, setSelectedTeamFilter] = useState("All");
-  const [selectedGradeFilter, setSelectedGradeFilter] = useState("All");
+  const [selectedCategoryFilter, setSelectedCategoryFilter] = useState<string>("All");
   const [localShowAllStudents, setLocalShowAllStudents] = useState<boolean>(false);
 
   const showAllStudents = parentShowAllStudents !== undefined ? parentShowAllStudents : localShowAllStudents;
@@ -192,6 +192,79 @@ export function Leaderboard({
     }
   };
 
+  /* ── Category & Grade matching helper ── */
+  const programMap = useMemo(() => {
+    const map = new Map<string, Program>();
+    programs.forEach((p) => map.set(p.id, p));
+    return map;
+  }, [programs]);
+
+  const isProgramInCategory = useCallback((p: Program | undefined, cat: string) => {
+    if (!p) return false;
+    if (cat === "All") return true;
+    const nameLower = (p.name || "").toLowerCase();
+    const catLower = (p.category || "").toLowerCase();
+    const gradeLower = (p.grade || "").toLowerCase();
+    const idLower = (p.id || "").toLowerCase();
+
+    if (cat === "Sanaviyya") {
+      return (
+        gradeLower === "sanaviyya" ||
+        gradeLower === "a" ||
+        nameLower.includes("sanaviyya") ||
+        idLower.startsWith("san-")
+      );
+    }
+    if (cat === "Bakalooriyya" || cat === "Bakalooria") {
+      return (
+        gradeLower === "bakalooriyya" ||
+        gradeLower === "bakalooria" ||
+        gradeLower === "b" ||
+        nameLower.includes("bakalooriyya") ||
+        nameLower.includes("bakalooria") ||
+        idLower.startsWith("bak-")
+      );
+    }
+    if (cat === "General") {
+      return (
+        catLower === "general" ||
+        gradeLower === "general" ||
+        idLower.startsWith("gen-")
+      );
+    }
+    if (cat === "Stage") {
+      return catLower === "stage";
+    }
+    if (cat === "Off-Stage") {
+      return catLower === "off-stage";
+    }
+    return catLower === cat.toLowerCase() || gradeLower === cat.toLowerCase();
+  }, []);
+
+  /* ── Calculate Category Points Map per Student ── */
+  const studentCategoryPointsMap = useMemo(() => {
+    const map: Record<string, number> = {};
+    students.forEach((s) => {
+      map[s.id] = 0;
+    });
+
+    results.forEach((r) => {
+      const prog = programMap.get(r.program_id);
+      if (prog && isProgramInCategory(prog, selectedCategoryFilter)) {
+        if (r.student_id && map[r.student_id] !== undefined) {
+          map[r.student_id] += (r.points_awarded || 0);
+        }
+      }
+    });
+
+    return map;
+  }, [students, results, programMap, selectedCategoryFilter, isProgramInCategory]);
+
+  const getStudentCategoryPoints = useCallback((s: Student) => {
+    if (selectedCategoryFilter === "All") return s.total_points;
+    return studentCategoryPointsMap[s.id] || 0;
+  }, [selectedCategoryFilter, studentCategoryPointsMap]);
+
   const filteredStudents = students.filter((s) => {
     const query = searchQuery.toLowerCase().trim();
     const matchesSearch =
@@ -202,9 +275,12 @@ export function Leaderboard({
     return matchesSearch && matchesTeam;
   });
 
-  const sortedStudents = [...filteredStudents].sort(
-    (a, b) => b.total_points - a.total_points
-  );
+  const sortedStudents = [...filteredStudents].sort((a, b) => {
+    const ptsA = getStudentCategoryPoints(a);
+    const ptsB = getStudentCategoryPoints(b);
+    if (ptsB !== ptsA) return ptsB - ptsA;
+    return b.total_points - a.total_points;
+  });
 
   const displayedStudents = showAllStudents
     ? sortedStudents
@@ -268,15 +344,57 @@ export function Leaderboard({
             letterSpacing: "-0.5px",
           }}
         >
-          Individual Leaderboard
+          {selectedCategoryFilter === "All"
+            ? "Individual Leaderboard"
+            : `${selectedCategoryFilter} Top Scorers`}
         </h2>
+      </div>
+
+      {/* ── Category & Grade Quick Filters ── */}
+      <div style={{ textAlign: "center", display: "flex", flexDirection: "column", alignItems: "center", gap: 8 }}>
+        <div style={{ display: "flex", alignItems: "center", gap: 5, fontSize: 11, fontWeight: 800, color: "#4B5563", textTransform: "uppercase", letterSpacing: "0.07em" }}>
+          <Filter className="w-3 h-3 text-[#1A56DB]" />
+          <span>Top Score Category Filter</span>
+        </div>
+        <div style={{ display: "flex", flexWrap: "wrap", gap: 8, justifyContent: "center" }}>
+          {[
+            { id: "All", label: "🏆 All Categories" },
+            { id: "Bakalooriyya", label: "🎓 Bakalooriyya" },
+            { id: "Sanaviyya", label: "📖 Sanaviyya" },
+            { id: "General", label: "🌟 General" },
+            { id: "Stage", label: "🎭 Stage" },
+            { id: "Off-Stage", label: "📝 Off-Stage" },
+          ].map((cat) => {
+            const isActive = selectedCategoryFilter === cat.id;
+            return (
+              <button
+                key={cat.id}
+                onClick={() => setSelectedCategoryFilter(cat.id)}
+                className={`filter-chip${isActive ? " active" : ""}`}
+                style={
+                  isActive
+                    ? {
+                        background: "linear-gradient(135deg, #1A56DB 0%, #1D4ED8 100%)",
+                        color: "#ffffff",
+                        borderColor: "#1E40AF",
+                        fontWeight: 800,
+                        boxShadow: "0 4px 12px rgba(26, 86, 219, 0.3)",
+                      }
+                    : {}
+                }
+              >
+                {cat.label}
+              </button>
+            );
+          })}
+        </div>
       </div>
 
       {/* Team Filter Chips */}
       <div style={{ display: "flex", flexWrap: "wrap", gap: 8, justifyContent: "center" }}>
         {["All", ...teams.map((t) => t.id)].map((filterId) => {
           const teamObj = teams.find((t) => t.id === filterId);
-          const label = filterId === "All" ? "All Participants" : (teamObj?.name ?? filterId);
+          const label = filterId === "All" ? "All Groups" : (teamObj?.name ?? filterId);
           const isActive = selectedTeamFilter === filterId;
           return (
             <button
@@ -340,9 +458,11 @@ export function Leaderboard({
                 {top3[1].name.length > 9 ? top3[1].name.slice(0, 8) + "…" : top3[1].name}
               </p>
               <p style={{ fontWeight: 800, fontSize: 15, color: "#F59E0B" }}>
-                {top3[1].total_points.toLocaleString()}
+                {getStudentCategoryPoints(top3[1]).toLocaleString()}
               </p>
-              <p style={{ fontSize: 10, color: "#9CA3AF" }}>pts</p>
+              <p style={{ fontSize: 10, color: "#9CA3AF" }}>
+                {selectedCategoryFilter === "All" ? "pts" : `pts (${selectedCategoryFilter})`}
+              </p>
             </div>
           )}
 
@@ -390,9 +510,11 @@ export function Leaderboard({
                 {top3[0].name.length > 10 ? top3[0].name.slice(0, 9) + "…" : top3[0].name}
               </p>
               <p style={{ fontWeight: 900, fontSize: 22, color: "#1A56DB" }}>
-                {top3[0].total_points.toLocaleString()}
+                {getStudentCategoryPoints(top3[0]).toLocaleString()}
               </p>
-              <p style={{ fontSize: 10, color: "#9CA3AF" }}>pts</p>
+              <p style={{ fontSize: 10, color: "#9CA3AF" }}>
+                {selectedCategoryFilter === "All" ? "pts" : `pts (${selectedCategoryFilter})`}
+              </p>
             </div>
           )}
 
@@ -432,9 +554,11 @@ export function Leaderboard({
                 {top3[2].name.length > 9 ? top3[2].name.slice(0, 8) + "…" : top3[2].name}
               </p>
               <p style={{ fontWeight: 800, fontSize: 15, color: "#F59E0B" }}>
-                {top3[2].total_points.toLocaleString()}
+                {getStudentCategoryPoints(top3[2]).toLocaleString()}
               </p>
-              <p style={{ fontSize: 10, color: "#9CA3AF" }}>pts</p>
+              <p style={{ fontSize: 10, color: "#9CA3AF" }}>
+                {selectedCategoryFilter === "All" ? "pts" : `pts (${selectedCategoryFilter})`}
+              </p>
             </div>
           )}
         </div>
@@ -504,6 +628,8 @@ export function Leaderboard({
                 const rank = idx + 1;
                 const isTop3 = rank <= 3;
                 const scoreColor = isTop3 ? SCORE_COLORS[idx] : "#1A56DB";
+                const catPoints = getStudentCategoryPoints(stud);
+                const maxCatPoints = sortedStudents[0] ? getStudentCategoryPoints(sortedStudents[0]) : 1;
 
                 return (
                   <div
@@ -582,13 +708,13 @@ export function Leaderboard({
                               color: scoreColor,
                             }}
                           >
-                            {stud.total_points.toLocaleString()}
+                            {catPoints.toLocaleString()}
                           </span>
                           <div className="progress-bar-track" style={{ width: 64, marginTop: 4, marginLeft: "auto" }}>
                             <div
                               className="progress-bar-fill"
                               style={{
-                                width: `${Math.max(10, (stud.total_points / (sortedStudents[0]?.total_points || 1)) * 100)}%`,
+                                width: `${Math.max(10, (catPoints / (maxCatPoints || 1)) * 100)}%`,
                                 background: scoreColor,
                               }}
                             />

@@ -58,15 +58,19 @@ export function ResultsAccordion({
         p.grade === "Sanaviyya" ||
         p.grade === "A" ||
         p.name.includes("Sanaviyya") ||
-        p.name.includes("Bracket A")
+        p.name.includes("Bracket A") ||
+        p.id.startsWith("san-")
       );
     }
-    if (selectedCategory === "Bakalooriyya") {
+    if (selectedCategory === "Bakalooriyya" || selectedCategory === "Bakalooria") {
       return (
         p.grade === "Bakalooriyya" ||
+        p.grade === "Bakalooria" ||
         p.grade === "B" ||
         p.name.includes("Bakalooriyya") ||
-        p.name.includes("Bracket B")
+        p.name.includes("Bakalooria") ||
+        p.name.includes("Bracket B") ||
+        p.id.startsWith("bak-")
       );
     }
     return p.category === selectedCategory;
