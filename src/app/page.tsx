@@ -412,22 +412,16 @@ export default function Home() {
         </div>
       </footer>
 
-      {/* Live Result Notification Popup when result is outed */}
-      {activeLivePopupResult && (() => {
-        const popupStud = students.find((s) => s.id === activeLivePopupResult.student_id);
-        const popupProg = programs.find((p) => p.id === activeLivePopupResult.program_id);
-        const popupTeam = teams.find((t) => t.id === (activeLivePopupResult.team_id || popupStud?.team_id));
-        return (
-          <LiveResultPopup
-            result={activeLivePopupResult}
-            program={popupProg || null}
-            student={popupStud || null}
-            team={popupTeam || null}
-            onClose={() => setActiveLivePopupResult(null)}
-            onOpenFullModal={(stud) => setActivePopupStudent(stud)}
-          />
-        );
-      })()}
+      {/* Live Game-Style Result Notification Popup (1 second per student order) */}
+      {results && results.length > 0 && (
+        <LiveResultPopup
+          results={results}
+          students={students}
+          teams={teams}
+          programs={programs}
+          onOpenFullModal={(stud) => setActivePopupStudent(stud)}
+        />
+      )}
 
       {/* Full Student Points Breakdown Modal */}
       <StudentPointsModal
