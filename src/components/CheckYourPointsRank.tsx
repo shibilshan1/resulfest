@@ -4,6 +4,7 @@ import { useState, useEffect, useRef } from "react";
 import { Student, Team, Program, Result } from "@/types";
 import { Search, Trophy, Sparkles, ChevronDown, X } from "lucide-react";
 import { StudentAvatar } from "./Leaderboard";
+import { StudentPointsModal } from "./StudentPointsModal";
 
 interface CheckYourPointsRankProps {
   students: Student[];
@@ -20,6 +21,7 @@ export function CheckYourPointsRank({
 }: CheckYourPointsRankProps) {
   const [checkQuery, setCheckQuery] = useState("");
   const [expandedCheckStudentId, setExpandedCheckStudentId] = useState<string | null>(null);
+  const [selectedPopupStudent, setSelectedPopupStudent] = useState<Student | null>(null);
 
   const isPopStateRef = useRef(false);
   const prevQueryRef = useRef("");
@@ -280,7 +282,10 @@ export function CheckYourPointsRank({
                         cursor: "pointer",
                         transition: "all 0.25s ease",
                       }}
-                      onClick={() => handleToggleExpand(stud.id)}
+                      onClick={() => {
+                        setSelectedPopupStudent(stud);
+                        handleToggleExpand(stud.id);
+                      }}
                     >
                       {/* Top Row */}
                       <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 12, flexWrap: "wrap" }}>
@@ -560,6 +565,15 @@ export function CheckYourPointsRank({
           </div>
         )}
       </div>
+      {/* Student Gained Points Popup Modal */}
+      <StudentPointsModal
+        student={selectedPopupStudent}
+        teams={teams}
+        programs={programs}
+        results={results}
+        allStudents={students}
+        onClose={() => setSelectedPopupStudent(null)}
+      />
     </section>
   );
 }

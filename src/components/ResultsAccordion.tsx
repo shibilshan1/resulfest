@@ -5,6 +5,7 @@ import { Program, Result, Student, Team } from "@/types";
 import { Award, Lock, ChevronDown, Trophy, Medal, Sparkles, ArrowLeft, X, Search } from "lucide-react";
 import confetti from "canvas-confetti";
 import { StudentAvatar } from "./Leaderboard";
+import { StudentPointsModal } from "./StudentPointsModal";
 
 interface ResultsAccordionProps {
   programs: Program[];
@@ -27,6 +28,7 @@ export function ResultsAccordion({
   expandedProgramId: parentExpandedProgramId,
   setExpandedProgramId: parentSetExpandedProgramId,
 }: ResultsAccordionProps) {
+  const [selectedPopupStudent, setSelectedPopupStudent] = useState<Student | null>(null);
   const [selectedCategory, setSelectedCategory] = useState<string>("All");
   const [selectedGrade, setSelectedGrade] = useState<string>("All");
   const [programSearchQuery, setProgramSearchQuery] = useState("");
@@ -515,10 +517,15 @@ export function ResultsAccordion({
                               <div
                                 key={res.id}
                                 className="winner-card app-card"
+                                onClick={() => {
+                                  if (student) setSelectedPopupStudent(student);
+                                }}
                                 style={{
                                   borderTop: `4px solid ${borderColor}`,
                                   background: bgGradient,
+                                  cursor: student ? "pointer" : "default",
                                 }}
+                                title={student ? `View ${student.name}'s Gained Points Breakdown` : undefined}
                               >
                                 {/* Position Status Badge */}
                                 <div
@@ -797,6 +804,15 @@ export function ResultsAccordion({
           <span>Back to 6 Programs</span>
         </button>
       )}
+      {/* Student Gained Points Popup Modal */}
+      <StudentPointsModal
+        student={selectedPopupStudent}
+        teams={teams}
+        programs={programs}
+        results={results}
+        allStudents={students}
+        onClose={() => setSelectedPopupStudent(null)}
+      />
     </section>
   );
 }

@@ -1,9 +1,11 @@
 "use client";
 
+import { useState } from "react";
 import { Team, Student, Program, Result } from "@/types";
 import { X, Award, Users, Trophy, ArrowLeft } from "lucide-react";
 import { StudentAvatar } from "./Leaderboard";
 import { TeamLogoAvatar } from "@/components/TeamLogoAvatar";
+import { StudentPointsModal } from "./StudentPointsModal";
 
 interface TeamDetailModalProps {
   team: Team | null;
@@ -20,6 +22,8 @@ export function TeamDetailModal({
   results,
   onClose,
 }: TeamDetailModalProps) {
+  const [selectedPopupStudent, setSelectedPopupStudent] = useState<Student | null>(null);
+
   if (!team) return null;
 
   const teamStudents = students.filter((s) => s.team_id === team.id);
@@ -196,6 +200,7 @@ export function TeamDetailModal({
                 {teamStudents.map((stud) => (
                   <div
                     key={stud.id}
+                    onClick={() => setSelectedPopupStudent(stud)}
                     style={{
                       display: "flex",
                       alignItems: "center",
@@ -204,6 +209,17 @@ export function TeamDetailModal({
                       borderRadius: 12,
                       background: "#F5F7FC",
                       border: "1px solid #E4EAF4",
+                      cursor: "pointer",
+                      transition: "transform 0.15s ease, background 0.15s ease",
+                    }}
+                    title={`View ${stud.name}'s Gained Points Breakdown`}
+                    onMouseEnter={(e) => {
+                      e.currentTarget.style.background = "#E8EFFF";
+                      e.currentTarget.style.transform = "translateY(-1px)";
+                    }}
+                    onMouseLeave={(e) => {
+                      e.currentTarget.style.background = "#F5F7FC";
+                      e.currentTarget.style.transform = "translateY(0)";
                     }}
                   >
                     <StudentAvatar
@@ -314,6 +330,16 @@ export function TeamDetailModal({
           </div>
         </div>
       </div>
+
+      {/* Student Gained Points Popup Modal */}
+      <StudentPointsModal
+        student={selectedPopupStudent}
+        teams={[team]}
+        programs={programs}
+        results={results}
+        allStudents={students}
+        onClose={() => setSelectedPopupStudent(null)}
+      />
     </div>
   );
 }

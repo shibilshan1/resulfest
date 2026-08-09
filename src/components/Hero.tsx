@@ -14,11 +14,11 @@ export function Hero({ onEnterMeet }: HeroProps) {
   return (
     <section
       id="hero"
-      className="relative w-full flex flex-col items-center justify-center text-center p-3 sm:p-6 overflow-hidden bg-white"
+      className="relative w-full min-h-[calc(100dvh-70px)] sm:min-h-[82vh] flex flex-col items-center justify-center text-center p-3 sm:p-6 overflow-hidden bg-white"
     >
       {/* Outer Card Container matching user's exact design */}
       <div
-        className="relative w-full max-w-md sm:max-w-lg mx-auto rounded-3xl p-6 sm:p-10 border border-slate-100 bg-gradient-to-b from-white via-[#F8FAFC] to-[#F1F5F9] flex flex-col items-center text-center space-y-6"
+        className="relative w-full max-w-md sm:max-w-lg mx-auto min-h-[calc(100dvh-105px)] sm:min-h-0 rounded-3xl p-5 sm:p-10 border border-slate-100 bg-gradient-to-b from-white via-[#F8FAFC] to-[#F1F5F9] flex flex-col items-center text-center justify-between sm:justify-center space-y-4 sm:space-y-6"
         style={{
           boxShadow: "0 20px 50px rgba(0, 0, 0, 0.06)",
         }}
@@ -34,7 +34,7 @@ export function Hero({ onEnterMeet }: HeroProps) {
         </Link>
 
         {/* Circular Logo Icon */}
-        <div className="relative pt-2">
+        <div className="relative pt-2 sm:pt-0">
           <div
             className="w-28 h-28 sm:w-36 sm:h-36 rounded-full bg-white p-2 shadow-md border border-slate-100 flex items-center justify-center mx-auto transition-transform hover:scale-105"
             style={{
@@ -51,9 +51,6 @@ export function Hero({ onEnterMeet }: HeroProps) {
 
         {/* Title and Tagline */}
         <div className="space-y-1.5">
-          <p className="text-xs sm:text-sm font-extrabold text-[#1A56DB] tracking-widest uppercase">
-            NATIONAL TALENT MEET
-          </p>
           <h1 className="text-3xl sm:text-4xl font-black text-slate-900 tracking-tight leading-tight">
             Kizil Elma
           </h1>

@@ -3,6 +3,7 @@
 import { useState, useEffect, useRef, useMemo, useCallback } from "react";
 import { Student, Team, Program, Result } from "@/types";
 import { Search, Trophy, Crown, Star, ChevronDown, ArrowLeft, X, Sparkles, User, Filter } from "lucide-react";
+import { StudentPointsModal } from "./StudentPointsModal";
 
 interface LeaderboardProps {
   students: Student[];
@@ -103,6 +104,7 @@ export function Leaderboard({
   const setShowAllStudents = parentSetShowAllStudents || setLocalShowAllStudents;
   const [expandedStudentId, setExpandedStudentId] = useState<string | null>(null);
   const [expandedCheckStudentId, setExpandedCheckStudentId] = useState<string | null>(null);
+  const [selectedPopupStudent, setSelectedPopupStudent] = useState<Student | null>(null);
 
   const isPopStateRef = useRef(false);
   const prevExpandedRef = useRef<string | null>(null);
@@ -358,12 +360,9 @@ export function Leaderboard({
         </div>
         <div style={{ display: "flex", flexWrap: "wrap", gap: 8, justifyContent: "center" }}>
           {[
-            { id: "All", label: "🏆 All Categories" },
-            { id: "Bakalooriyya", label: "🎓 Bakalooriyya" },
+            { id: "All", label: "🏆 All Groups" },
+            { id: "Bakalooria", label: "🎓 Bakalooria" },
             { id: "Sanaviyya", label: "📖 Sanaviyya" },
-            { id: "General", label: "🌟 General" },
-            { id: "Stage", label: "🎭 Stage" },
-            { id: "Off-Stage", label: "📝 Off-Stage" },
           ].map((cat) => {
             const isActive = selectedCategoryFilter === cat.id;
             return (
@@ -424,7 +423,11 @@ export function Leaderboard({
         >
           {/* 2nd place (left) */}
           {top3[1] && (
-            <div style={{ textAlign: "center", flex: 1, maxWidth: "clamp(80px, 28vw, 110px)" }}>
+            <div
+              onClick={() => setSelectedPopupStudent(top3[1])}
+              style={{ textAlign: "center", flex: 1, maxWidth: "clamp(80px, 28vw, 110px)", cursor: "pointer" }}
+              title={`View ${top3[1].name}'s Gained Points Breakdown`}
+            >
               <div style={{ position: "relative", display: "inline-block" }}>
                 <StudentAvatar
                   src={top3[1].photo_url}
@@ -468,7 +471,11 @@ export function Leaderboard({
 
           {/* 1st place (center – raised) */}
           {top3[0] && (
-            <div style={{ textAlign: "center", flex: 1, maxWidth: "clamp(95px, 32vw, 130px)", transform: "translateY(-16px)" }}>
+            <div
+              onClick={() => setSelectedPopupStudent(top3[0])}
+              style={{ textAlign: "center", flex: 1, maxWidth: "clamp(95px, 32vw, 130px)", transform: "translateY(-16px)", cursor: "pointer" }}
+              title={`View ${top3[0].name}'s Gained Points Breakdown`}
+            >
               <div
                 style={{
                   position: "relative",
@@ -520,7 +527,11 @@ export function Leaderboard({
 
           {/* 3rd place (right) */}
           {top3[2] && (
-            <div style={{ textAlign: "center", flex: 1, maxWidth: "clamp(80px, 28vw, 110px)" }}>
+            <div
+              onClick={() => setSelectedPopupStudent(top3[2])}
+              style={{ textAlign: "center", flex: 1, maxWidth: "clamp(80px, 28vw, 110px)", cursor: "pointer" }}
+              title={`View ${top3[2].name}'s Gained Points Breakdown`}
+            >
               <div style={{ position: "relative", display: "inline-block" }}>
                 <StudentAvatar
                   src={top3[2].photo_url}
@@ -640,7 +651,10 @@ export function Leaderboard({
                       cursor: "pointer",
                       animationDelay: `${Math.min(idx * 0.04, 0.5)}s`,
                     }}
-                    onClick={() => handleToggleStudentExpand(stud.id)}
+                    onClick={() => {
+                      setSelectedPopupStudent(stud);
+                      handleToggleStudentExpand(stud.id);
+                    }}
                   >
                     {/* Main row */}
                     <div
@@ -1475,6 +1489,15 @@ export function Leaderboard({
           </div>
         )}
       </div>
+      {/* Student Gained Points Popup Modal */}
+      <StudentPointsModal
+        student={selectedPopupStudent}
+        teams={teams}
+        programs={programs}
+        results={results}
+        allStudents={students}
+        onClose={() => setSelectedPopupStudent(null)}
+      />
     </section>
   );
 }
