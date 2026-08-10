@@ -29,7 +29,7 @@ export function Scoreboard({ teams, scoreProgression, onSelectTeam }: Scoreboard
   const sortedTeams = [...teams].sort((a, b) => b.total_score - a.total_score);
 
   return (
-    <section id="scoreboard" style={{ width: "100%", maxWidth: 1152, margin: "0 auto", padding: "24px 16px", display: "flex", flexDirection: "column", gap: 24 }}>
+    <section id="scoreboard" className="w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 space-y-6 sm:space-y-8">
 
       {/* ── Section Header ── */}
       <div style={{ textAlign: "center", display: "flex", flexDirection: "column", alignItems: "center", gap: 6 }}>
@@ -185,7 +185,7 @@ export function Scoreboard({ teams, scoreProgression, onSelectTeam }: Scoreboard
           .scoreboard-grid { grid-template-columns: repeat(2, 1fr) !important; gap: 16px !important; }
         }
         @media (min-width: 1024px) {
-          .scoreboard-grid { grid-template-columns: repeat(4, 1fr) !important; }
+          .scoreboard-grid { grid-template-columns: repeat(4, 1fr) !important; gap: 20px !important; }
         }
       `}</style>
 
@@ -195,7 +195,7 @@ export function Scoreboard({ teams, scoreProgression, onSelectTeam }: Scoreboard
         borderRadius: 20,
         border: "1px solid #E4EAF4",
         boxShadow: "0 2px 16px rgba(30,64,175,0.07)",
-        padding: "20px 16px",
+        padding: "24px 20px",
       }}>
         <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 18, flexWrap: "wrap", gap: 6 }}>
           <div>
@@ -208,13 +208,13 @@ export function Scoreboard({ teams, scoreProgression, onSelectTeam }: Scoreboard
         </div>
 
         {scoreProgression.length > 0 ? (
-          <div style={{ overflowX: "auto" }}>
-            <div style={{ minWidth: 360, height: 240 }}>
+          <div style={{ width: "100%" }}>
+            <div className="w-full h-64 sm:h-80">
               <ResponsiveContainer width="100%" height="100%">
                 <LineChart data={scoreProgression} margin={{ top: 8, right: 12, left: -14, bottom: 4 }}>
                   <CartesianGrid strokeDasharray="3 3" stroke="#F0F4FA" />
-                  <XAxis dataKey="program" stroke="#E4EAF4" tick={{ fill: "#9CA3AF", fontSize: 10 }} />
-                  <YAxis stroke="#E4EAF4" tick={{ fill: "#9CA3AF", fontSize: 10 }} />
+                  <XAxis dataKey="program" stroke="#E4EAF4" tick={{ fill: "#9CA3AF", fontSize: 11 }} />
+                  <YAxis stroke="#E4EAF4" tick={{ fill: "#9CA3AF", fontSize: 11 }} />
                   <Tooltip
                     contentStyle={{
                       background: "#fff", borderColor: "#E4EAF4",
@@ -232,8 +232,8 @@ export function Scoreboard({ teams, scoreProgression, onSelectTeam }: Scoreboard
                         dataKey={team.name}
                         stroke={styling.text}
                         strokeWidth={2.5}
-                        dot={{ fill: styling.text, r: 3 }}
-                        activeDot={{ r: 5, stroke: "#fff", strokeWidth: 2 }}
+                        dot={{ fill: styling.text, r: 4 }}
+                        activeDot={{ r: 6, stroke: "#fff", strokeWidth: 2 }}
                       />
                     );
                   })}

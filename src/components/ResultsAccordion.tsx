@@ -121,7 +121,7 @@ export function ResultsAccordion({
   return (
     <section
       id="results"
-      className="w-full max-w-6xl mx-auto px-4 py-6 space-y-5"
+      className="w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 space-y-6"
     >
       {/* Section Header */}
       <div style={{ textAlign: "center" }}>

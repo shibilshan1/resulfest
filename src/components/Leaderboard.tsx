@@ -314,8 +314,7 @@ export function Leaderboard({
   return (
     <section
       id="leaderboard"
-      className="w-full max-w-6xl mx-auto px-4 py-6 space-y-5"
-      style={{ paddingBottom: 40 }}
+      className="w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 space-y-6"
     >
       {/* Section Header */}
       <div style={{ textAlign: "center" }}>
@@ -1007,7 +1006,7 @@ export function Leaderboard({
       <div
         id="check-points"
         style={{
-          maxWidth: 680,
+          maxWidth: 960,
           margin: "24px auto 0",
           padding: "16px 20px",
           borderRadius: 24,

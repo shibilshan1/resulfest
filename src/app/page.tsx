@@ -340,7 +340,7 @@ export default function Home() {
       )}
 
       {/* Main Content */}
-      <main style={{ flex: 1, paddingBottom: 80 }}>
+      <main className="flex-1 pb-20 md:pb-12 space-y-4 md:space-y-8">
         <Hero
           onEnterMeet={handleEnterMeet}
           programsCount={programs.length}

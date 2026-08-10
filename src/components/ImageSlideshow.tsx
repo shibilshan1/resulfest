@@ -33,9 +33,12 @@ export function ImageSlideshow({ images }: ImageSlideshowProps) {
   const slides = images && images.length > 0 ? images : [];
   if (slides.length === 0) return null;
 
-  // Distribute items into 2 columns for a balanced Pinterest masonry grid matching reference HTML
-  const col1 = slides.filter((_, idx) => idx % 2 === 0);
-  const col2 = slides.filter((_, idx) => idx % 2 === 1);
+  // Distribute items into responsive columns for desktop/laptop masonry grid
+  const colsCount = 4;
+  const columns: SlideshowImage[][] = Array.from({ length: colsCount }, () => []);
+  slides.forEach((img, idx) => {
+    columns[idx % colsCount].push(img);
+  });
 
   const handleOpenLightbox = (img: SlideshowImage) => {
     setSelectedImage(img);
@@ -49,7 +52,7 @@ export function ImageSlideshow({ images }: ImageSlideshowProps) {
     : [];
 
   return (
-    <section id="gallery" className="w-full max-w-5xl mx-auto px-3 sm:px-4 py-10 space-y-6">
+    <section id="gallery" className="w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10 space-y-6">
       {/* Section Header */}
       <div className="text-center space-y-1.5">
         <h2 className="text-2xl sm:text-4xl font-extrabold text-slate-900 tracking-tight">
@@ -57,31 +60,25 @@ export function ImageSlideshow({ images }: ImageSlideshowProps) {
         </h2>
       </div>
 
-      {/* ── Pinterest-Style Masonry Grid (Matching Reference HTML Structure) ── */}
-      <div className="grid grid-cols-2 gap-3 sm:gap-4 items-start">
-        {/* Column 1 */}
-        <div className="space-y-3 sm:space-y-4">
-          {col1.map((img, idx) => (
-            <MasonryCard
-              key={img.id || idx}
-              img={img}
-              cardIndex={idx * 2}
-              onClick={() => handleOpenLightbox(img)}
-            />
-          ))}
-        </div>
-
-        {/* Column 2 */}
-        <div className="space-y-3 sm:space-y-4">
-          {col2.map((img, idx) => (
-            <MasonryCard
-              key={img.id || idx}
-              img={img}
-              cardIndex={idx * 2 + 1}
-              onClick={() => handleOpenLightbox(img)}
-            />
-          ))}
-        </div>
+      {/* ── Pinterest-Style Masonry Grid (4 Columns on Laptop, 2 on Mobile) ── */}
+      <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 sm:gap-4 items-start">
+        {columns.map((colImages, colIdx) => (
+          <div
+            key={colIdx}
+            className={`space-y-3 sm:space-y-4 ${
+              colIdx >= 2 ? "hidden md:block" : ""
+            } ${colIdx >= 3 ? "hidden lg:block" : ""}`}
+          >
+            {colImages.map((img, idx) => (
+              <MasonryCard
+                key={img.id || idx}
+                img={img}
+                cardIndex={idx * colsCount + colIdx}
+                onClick={() => handleOpenLightbox(img)}
+              />
+            ))}
+          </div>
+        ))}
       </div>
 
       {/* Full-screen Lightbox Image Modal */}
