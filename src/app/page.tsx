@@ -279,18 +279,7 @@ export default function Home() {
 
   if (isLoading) {
     return (
-      <div
-        style={{
-          minHeight: "100vh",
-          display: "flex",
-          flexDirection: "column",
-          alignItems: "center",
-          justifyContent: "center",
-          gap: 20,
-          background: "#070A14",
-          color: "#fff",
-        }}
-      >
+      <div className="loading-cream">
         <img
           src="/logo.png"
           alt="Kizil Elma 2K26"
@@ -298,11 +287,11 @@ export default function Home() {
             maxHeight: 120,
             maxWidth: "80vw",
             objectFit: "contain",
-            filter: "drop-shadow(0 4px 12px rgba(0,0,0,0.5))",
+            filter: "drop-shadow(0 4px 12px rgba(61,43,31,0.15))",
           }}
         />
         <div className="loading-spinner" />
-        <p style={{ color: "#93C5FD", fontWeight: 700, fontSize: 15 }}>
+        <p style={{ color: "#8B7355", fontWeight: 700, fontSize: 15, fontFamily: "var(--font-headline)" }}>
           Loading Kizil Elma 2K26…
         </p>
       </div>
@@ -313,7 +302,7 @@ export default function Home() {
     <div
       style={{
         minHeight: "100vh",
-        background: "#F0F4FA",
+        background: "#F5F0E8",
         color: "#111827",
         display: "flex",
         flexDirection: "column",
@@ -384,8 +373,8 @@ export default function Home() {
       {/* Footer */}
       <footer
         style={{
-          background: "#fff",
-          borderTop: "1px solid #E4EAF4",
+          background: "var(--color-cream)",
+          borderTop: "1px solid var(--color-warm-border)",
           padding: "28px 16px",
           textAlign: "center",
         }}
@@ -400,7 +389,7 @@ export default function Home() {
               objectFit: "contain",
             }}
           />
-          <p style={{ fontSize: 12, color: "#6B7280", margin: 0, fontWeight: 500 }}>
+          <p style={{ fontSize: 12, color: "var(--color-hero-muted)", margin: 0, fontWeight: 500, fontFamily: "var(--font-headline)" }}>
             AKMM College Level Talents Meet 2K26 • Heading for the Ultimate Goal
           </p>
           <div style={{ fontSize: 11, color: "#9CA3AF", display: "flex", alignItems: "center", justifyContent: "center", gap: 6 }}>
@@ -408,7 +397,7 @@ export default function Home() {
             <span>•</span>
             <Link
               href="/admin"
-              style={{ color: "#1A56DB", fontWeight: 600 }}
+              style={{ color: "var(--color-warm-accent)", fontWeight: 600 }}
             >
               Admin Portal
             </Link>

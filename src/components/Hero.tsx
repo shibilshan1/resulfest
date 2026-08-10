@@ -1,6 +1,8 @@
 "use client";
 
-import { Award, Users, ArrowRight, Trophy, Sparkles, Activity } from "lucide-react";
+import { useRef } from "react";
+import { motion, useInView, Variants } from "framer-motion";
+import { Award, Users, ArrowRight, Trophy, ChevronDown } from "lucide-react";
 
 interface HeroProps {
   onEnterMeet: () => void;
@@ -8,11 +10,97 @@ interface HeroProps {
   participantsCount?: number;
 }
 
+/* ── Animation Variants ── */
+const EASE_CUBIC = [0.25, 0.46, 0.45, 0.94] as const;
+
+const containerVariants: Variants = {
+  hidden: {},
+  visible: {
+    transition: {
+      staggerChildren: 0.15,
+      delayChildren: 0.1,
+    },
+  },
+};
+
+const fadeUp: Variants = {
+  hidden: { opacity: 0, y: 30 },
+  visible: {
+    opacity: 1,
+    y: 0,
+    transition: { duration: 0.8, ease: EASE_CUBIC },
+  },
+};
+
+const fadeIn: Variants = {
+  hidden: { opacity: 0 },
+  visible: {
+    opacity: 1,
+    transition: { duration: 1, ease: EASE_CUBIC },
+  },
+};
+
+const logoReveal: Variants = {
+  hidden: { opacity: 0, scale: 0.7, filter: "blur(12px)" },
+  visible: {
+    opacity: 1,
+    scale: 1,
+    filter: "blur(0px)",
+    transition: {
+      duration: 1.2,
+      ease: EASE_CUBIC,
+    },
+  },
+};
+
+const wordReveal: Variants = {
+  hidden: { opacity: 0, y: 20 },
+  visible: (i: number) => ({
+    opacity: 1,
+    y: 0,
+    transition: {
+      delay: 0.6 + i * 0.12,
+      duration: 0.7,
+      ease: EASE_CUBIC,
+    },
+  }),
+};
+
+const staggerUp = (delay: number): Variants => ({
+  hidden: { opacity: 0, y: 24 },
+  visible: {
+    opacity: 1,
+    y: 0,
+    transition: {
+      delay,
+      duration: 0.7,
+      ease: EASE_CUBIC,
+    },
+  },
+});
+
+const springIn = (delay: number): Variants => ({
+  hidden: { opacity: 0, scale: 0.85 },
+  visible: {
+    opacity: 1,
+    scale: 1,
+    transition: {
+      delay,
+      type: "spring",
+      stiffness: 200,
+      damping: 20,
+    },
+  },
+});
+
 export function Hero({
   onEnterMeet,
   programsCount = 24,
   participantsCount = 1240,
 }: HeroProps) {
+  const sectionRef = useRef<HTMLElement>(null);
+  const isInView = useInView(sectionRef, { once: true, amount: 0.2 });
+
   const handleOpenResults = () => {
     const element = document.getElementById("results");
     if (element) {
@@ -29,125 +117,437 @@ export function Hero({
     }
   };
 
+  const handleScrollDown = () => {
+    const scoreboard = document.getElementById("scoreboard");
+    if (scoreboard) {
+      scoreboard.scrollIntoView({ behavior: "smooth" });
+    }
+  };
+
+  const headingWords = ["Kizil", "Elma"];
+  const mottoText = "Heading for the Ultimate Goal";
+
   return (
     <section
+      ref={sectionRef}
       id="hero"
-      className="w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-6 lg:pt-10 pb-8 sm:pb-12 animate-fadeIn"
+      className="hero-premium"
     >
-      <div className="lg:grid lg:grid-cols-12 lg:gap-12 lg:items-center">
-        {/* Left Column: Main Headlines & Actions */}
-        <div className="lg:col-span-7 space-y-6 text-center lg:text-left flex flex-col items-center lg:items-start">
-          
-          {/* Fest Badge Pill */}
-          <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-blue-500/10 border border-blue-500/20 text-[#0058bc] text-xs sm:text-sm font-extrabold uppercase tracking-wider">
-            <Sparkles className="w-4 h-4 text-[#0058bc]" />
-            <span>National Talent Meet 2K26</span>
-          </div>
+      {/* ── Background Decorative Orbs ── */}
+      <motion.div
+        variants={fadeIn}
+        initial="hidden"
+        animate={isInView ? "visible" : "hidden"}
+        style={{ position: "absolute", inset: 0, pointerEvents: "none" }}
+      >
+        {/* Top-right warm orb */}
+        <div
+          className="hero-orb hero-orb--warm"
+          style={{
+            width: "500px",
+            height: "500px",
+            top: "-10%",
+            right: "-5%",
+          }}
+        />
+        {/* Bottom-left cream orb */}
+        <div
+          className="hero-orb hero-orb--cream"
+          style={{
+            width: "600px",
+            height: "600px",
+            bottom: "-15%",
+            left: "-10%",
+          }}
+        />
+        {/* Center gold orb */}
+        <div
+          className="hero-orb hero-orb--gold"
+          style={{
+            width: "400px",
+            height: "400px",
+            top: "30%",
+            left: "50%",
+            transform: "translateX(-50%)",
+          }}
+        />
+      </motion.div>
 
-          {/* Main Title Heading */}
-          <div className="space-y-2 max-w-2xl">
-            <h1 className="text-slate-900 font-black text-3xl sm:text-5xl lg:text-6xl leading-[1.1] uppercase tracking-tight">
-              KIZIL ELMA Fest <br />
-              <span className="text-[#0058bc] bg-gradient-to-r from-[#0058bc] via-blue-600 to-indigo-600 bg-clip-text text-transparent">
-                Live Score & Results
-              </span>
-            </h1>
-            <p className="text-slate-600 font-bold text-base sm:text-xl lg:text-2xl tracking-tight pt-1">
-              Heading for the Ultimate Goal
-            </p>
-            <p className="text-slate-500 text-xs sm:text-sm font-semibold uppercase tracking-wider">
-              AKMM TALENTS MEET 2K26 • Official Realtime Scoreboard
-            </p>
-          </div>
+      {/* Grain texture */}
+      <div className="hero-grain" />
 
-          {/* Desktop/Mobile Action Buttons */}
-          <div className="pt-2 flex flex-col sm:flex-row items-center gap-3 sm:gap-4 w-full max-w-md lg:max-w-none justify-center lg:justify-start">
-            <button
-              onClick={handleOpenResults}
-              className="w-full sm:w-auto py-3.5 px-8 rounded-full bg-[#0058bc] hover:bg-[#004bb0] text-white font-extrabold text-base sm:text-lg shadow-[0_12px_24px_rgba(0,88,188,0.3)] hover:shadow-[0_14px_32px_rgba(0,88,188,0.45)] active:scale-95 transition-all duration-200 flex items-center justify-center gap-3 group cursor-pointer border border-white/20"
+      {/* ── Main Content ── */}
+      <motion.div
+        variants={containerVariants}
+        initial="hidden"
+        animate={isInView ? "visible" : "hidden"}
+        style={{
+          position: "relative",
+          zIndex: 10,
+          display: "flex",
+          flexDirection: "column",
+          alignItems: "center",
+          textAlign: "center",
+          padding: "0 24px",
+          maxWidth: "900px",
+          width: "100%",
+          gap: 0,
+        }}
+      >
+        {/* ── Logo ── */}
+        <motion.div
+          variants={logoReveal}
+          style={{
+            marginBottom: "28px",
+          }}
+        >
+          <div
+            style={{
+              padding: "16px",
+              borderRadius: "32px",
+              background: "rgba(255,255,255,0.5)",
+              backdropFilter: "blur(12px)",
+              WebkitBackdropFilter: "blur(12px)",
+              border: "1px solid rgba(212,165,116,0.15)",
+              boxShadow: "0 16px 60px rgba(61,43,31,0.08)",
+              display: "inline-block",
+            }}
+          >
+            <img
+              src="/logo.png"
+              alt="Kizil Elma Logo"
+              style={{
+                height: "clamp(100px, 18vw, 180px)",
+                width: "auto",
+                objectFit: "contain",
+                display: "block",
+              }}
+            />
+          </div>
+        </motion.div>
+
+        {/* ── Heading: "Kizil Elma" ── */}
+        <div
+          style={{
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            gap: "clamp(12px, 3vw, 24px)",
+            flexWrap: "wrap",
+            marginBottom: "12px",
+          }}
+        >
+          {headingWords.map((word, i) => (
+            <motion.span
+              key={word}
+              custom={i}
+              variants={wordReveal}
+              initial="hidden"
+              animate={isInView ? "visible" : "hidden"}
+              className="hero-title"
+              style={{
+                fontFamily: "var(--font-headline)",
+                fontWeight: 900,
+                fontSize: "4.5rem",
+                lineHeight: 1.05,
+                color: "var(--color-hero-text)",
+                letterSpacing: "-0.03em",
+                display: "inline-block",
+              }}
             >
-              <span>Open Result</span>
-              <ArrowRight className="w-5 h-5 stroke-[2.5] group-hover:translate-x-1 transition-transform" />
-            </button>
-
-            <button
-              onClick={handleOpenScoreboard}
-              className="w-full sm:w-auto py-3.5 px-8 rounded-full bg-white hover:bg-slate-50 text-slate-800 font-extrabold text-base sm:text-lg shadow-sm hover:shadow-md active:scale-95 transition-all duration-200 flex items-center justify-center gap-2 border border-slate-200 cursor-pointer"
-            >
-              <Trophy className="w-5 h-5 text-amber-500 stroke-[2.2]" />
-              <span>Live Standings</span>
-            </button>
-          </div>
-
-          {/* Live Status indicator */}
-          <div className="pt-1 flex items-center gap-2 text-xs font-semibold text-slate-500">
-            <span className="relative flex h-2.5 w-2.5">
-              <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75" />
-              <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-emerald-500" />
-            </span>
-            <span>Realtime Database Connected • System Live</span>
-          </div>
+              {word}
+            </motion.span>
+          ))}
         </div>
 
-        {/* Right Column: Hero Visual Logo Card & Quick Stats Panel */}
-        <div className="lg:col-span-5 mt-8 lg:mt-0 flex flex-col items-center">
-          <div className="w-full max-w-md bg-white/90 backdrop-blur-xl p-6 sm:p-8 rounded-3xl border border-slate-200/80 shadow-[0_16px_40px_rgba(30,64,175,0.08)] flex flex-col items-center space-y-6 relative overflow-hidden">
-            
-            {/* Background Glow Overlay */}
-            <div className="absolute -top-20 -right-20 w-48 h-48 bg-blue-400/10 rounded-full blur-3xl pointer-events-none" />
-            <div className="absolute -bottom-20 -left-20 w-48 h-48 bg-amber-400/10 rounded-full blur-3xl pointer-events-none" />
+        {/* ── Warm accent divider ── */}
+        <motion.hr
+          className="hero-divider"
+          variants={staggerUp(0.9)}
+          initial="hidden"
+          animate={isInView ? "visible" : "hidden"}
+          style={{ marginBottom: "16px" }}
+        />
 
-            {/* Kizil Elma Centered Logo */}
-            <div className="relative z-10 p-3 bg-blue-50/50 rounded-2xl border border-blue-100/60 shadow-xs">
-              <img
-                src="/logo.png"
-                alt="Kizil Elma Logo"
-                className="h-28 sm:h-36 md:h-40 w-auto object-contain filter drop-shadow-md hover:scale-105 transition-transform duration-300"
+        {/* ── Motto ── */}
+        <motion.p
+          className="hero-motto"
+          variants={staggerUp(1.0)}
+          initial="hidden"
+          animate={isInView ? "visible" : "hidden"}
+          style={{
+            fontFamily: "var(--font-headline)",
+            fontWeight: 600,
+            fontSize: "1.5rem",
+            color: "var(--color-hero-muted)",
+            letterSpacing: "-0.01em",
+            marginBottom: "8px",
+            lineHeight: 1.4,
+          }}
+        >
+          {mottoText}
+        </motion.p>
+
+        {/* ── Subtitle ── */}
+        <motion.p
+          className="hero-subtitle"
+          variants={staggerUp(1.15)}
+          initial="hidden"
+          animate={isInView ? "visible" : "hidden"}
+          style={{
+            fontFamily: "var(--font-headline)",
+            fontWeight: 700,
+            fontSize: "0.8rem",
+            color: "var(--color-warm-accent)",
+            letterSpacing: "0.15em",
+            textTransform: "uppercase",
+            marginBottom: "32px",
+          }}
+        >
+          AKMM College Level Talents Meet 2K26
+        </motion.p>
+
+        {/* ── Stats Cards ── */}
+        <div
+          style={{
+            display: "flex",
+            gap: "16px",
+            justifyContent: "center",
+            flexWrap: "wrap",
+            marginBottom: "36px",
+            width: "100%",
+            maxWidth: "440px",
+          }}
+        >
+          <motion.div
+            className="hero-stat-card"
+            variants={springIn(1.4)}
+            initial="hidden"
+            animate={isInView ? "visible" : "hidden"}
+            style={{ flex: "1 1 180px", minWidth: "140px" }}
+          >
+            <div
+              style={{
+                width: "44px",
+                height: "44px",
+                borderRadius: "14px",
+                background: "rgba(245,158,11,0.1)",
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+                margin: "0 auto 10px",
+              }}
+            >
+              <Award
+                style={{ width: "22px", height: "22px", color: "#D4A574" }}
+                strokeWidth={2.2}
               />
             </div>
+            <p
+              style={{
+                fontFamily: "var(--font-headline)",
+                fontWeight: 800,
+                fontSize: "2rem",
+                color: "var(--color-hero-text)",
+                lineHeight: 1,
+                marginBottom: "2px",
+              }}
+            >
+              {programsCount.toLocaleString()}
+            </p>
+            <p
+              style={{
+                fontFamily: "var(--font-headline)",
+                fontWeight: 600,
+                fontSize: "0.7rem",
+                color: "var(--color-hero-muted)",
+                textTransform: "uppercase",
+                letterSpacing: "0.1em",
+              }}
+            >
+              Programmes
+            </p>
+          </motion.div>
 
-            {/* Stats Cards (2-column inside hero card) */}
-            <div className="grid grid-cols-2 gap-3 w-full relative z-10">
-              {/* Programmes Card */}
-              <div className="bg-slate-50 p-4 rounded-2xl border border-slate-200/60 flex flex-col items-center text-center space-y-1 hover:bg-white hover:shadow-xs transition-all">
-                <div className="w-10 h-10 rounded-xl bg-amber-500/10 flex items-center justify-center text-[#fe9400]">
-                  <Award className="w-5 h-5 stroke-[2.2]" />
-                </div>
-                <p className="text-[11px] font-bold text-slate-400 uppercase tracking-wider mt-1">
-                  Programmes
-                </p>
-                <p className="text-xl sm:text-2xl font-black text-slate-900">
-                  {programsCount.toLocaleString()}
-                </p>
-              </div>
-
-              {/* Participants Card */}
-              <div className="bg-slate-50 p-4 rounded-2xl border border-slate-200/60 flex flex-col items-center text-center space-y-1 hover:bg-white hover:shadow-xs transition-all">
-                <div className="w-10 h-10 rounded-xl bg-blue-500/10 flex items-center justify-center text-[#0058bc]">
-                  <Users className="w-5 h-5 stroke-[2.2]" />
-                </div>
-                <p className="text-[11px] font-bold text-slate-400 uppercase tracking-wider mt-1">
-                  Participants
-                </p>
-                <p className="text-xl sm:text-2xl font-black text-slate-900">
-                  {participantsCount.toLocaleString()}
-                </p>
-              </div>
+          <motion.div
+            className="hero-stat-card"
+            variants={springIn(1.55)}
+            initial="hidden"
+            animate={isInView ? "visible" : "hidden"}
+            style={{ flex: "1 1 180px", minWidth: "140px" }}
+          >
+            <div
+              style={{
+                width: "44px",
+                height: "44px",
+                borderRadius: "14px",
+                background: "rgba(61,43,31,0.08)",
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+                margin: "0 auto 10px",
+              }}
+            >
+              <Users
+                style={{ width: "22px", height: "22px", color: "#3D2B1F" }}
+                strokeWidth={2.2}
+              />
             </div>
-
-            {/* Quick Live Updates Badge */}
-            <div className="w-full bg-blue-50/80 p-3 rounded-2xl border border-blue-100 flex items-center justify-between text-xs text-[#0058bc] font-bold relative z-10">
-              <div className="flex items-center gap-2">
-                <Activity className="w-4 h-4 text-[#0058bc] animate-pulse" />
-                <span>Live Event Feed</span>
-              </div>
-              <span className="px-2 py-0.5 rounded-full bg-white text-[10px] uppercase font-black tracking-wide border border-blue-200 shadow-2xs">
-                Auto Sync
-              </span>
-            </div>
-          </div>
+            <p
+              style={{
+                fontFamily: "var(--font-headline)",
+                fontWeight: 800,
+                fontSize: "2rem",
+                color: "var(--color-hero-text)",
+                lineHeight: 1,
+                marginBottom: "2px",
+              }}
+            >
+              {participantsCount.toLocaleString()}
+            </p>
+            <p
+              style={{
+                fontFamily: "var(--font-headline)",
+                fontWeight: 600,
+                fontSize: "0.7rem",
+                color: "var(--color-hero-muted)",
+                textTransform: "uppercase",
+                letterSpacing: "0.1em",
+              }}
+            >
+              Participants
+            </p>
+          </motion.div>
         </div>
-      </div>
+
+        {/* ── CTA Buttons ── */}
+        <div
+          style={{
+            display: "flex",
+            gap: "16px",
+            justifyContent: "center",
+            flexWrap: "wrap",
+            width: "100%",
+            maxWidth: "480px",
+            marginBottom: "16px",
+          }}
+        >
+          <motion.button
+            className="hero-btn-primary"
+            variants={springIn(1.7)}
+            initial="hidden"
+            animate={isInView ? "visible" : "hidden"}
+            whileHover={{ scale: 1.03 }}
+            whileTap={{ scale: 0.97 }}
+            onClick={handleOpenResults}
+          >
+            <span>View Results</span>
+            <ArrowRight style={{ width: "18px", height: "18px" }} strokeWidth={2.5} />
+          </motion.button>
+
+          <motion.button
+            className="hero-btn-secondary"
+            variants={springIn(1.85)}
+            initial="hidden"
+            animate={isInView ? "visible" : "hidden"}
+            whileHover={{ scale: 1.03 }}
+            whileTap={{ scale: 0.97 }}
+            onClick={handleOpenScoreboard}
+          >
+            <Trophy style={{ width: "18px", height: "18px", color: "#D4A574" }} strokeWidth={2.2} />
+            <span>Live Standings</span>
+          </motion.button>
+        </div>
+
+        {/* ── Live indicator ── */}
+        <motion.div
+          variants={staggerUp(2.0)}
+          initial="hidden"
+          animate={isInView ? "visible" : "hidden"}
+          style={{
+            display: "flex",
+            alignItems: "center",
+            gap: "8px",
+            fontSize: "0.75rem",
+            fontWeight: 600,
+            color: "var(--color-hero-muted)",
+            marginBottom: "8px",
+          }}
+        >
+          <span style={{ position: "relative", display: "flex", width: "10px", height: "10px" }}>
+            <span
+              style={{
+                position: "absolute",
+                inset: 0,
+                borderRadius: "50%",
+                background: "#22C55E",
+                opacity: 0.6,
+                animation: "ping 1.5s cubic-bezier(0, 0, 0.2, 1) infinite",
+              }}
+            />
+            <span
+              style={{
+                position: "relative",
+                display: "inline-flex",
+                width: "10px",
+                height: "10px",
+                borderRadius: "50%",
+                background: "#22C55E",
+              }}
+            />
+          </span>
+          <span>Realtime • System Live</span>
+        </motion.div>
+      </motion.div>
+
+      {/* ── Scroll Down Indicator ── */}
+      <motion.div
+        variants={staggerUp(2.3)}
+        initial="hidden"
+        animate={isInView ? "visible" : "hidden"}
+        className="hero-scroll-indicator"
+        style={{
+          position: "absolute",
+          bottom: "32px",
+          left: "50%",
+          transform: "translateX(-50%)",
+          cursor: "pointer",
+          zIndex: 10,
+          display: "flex",
+          flexDirection: "column",
+          alignItems: "center",
+          gap: "6px",
+        }}
+        onClick={handleScrollDown}
+      >
+        <span
+          style={{
+            fontFamily: "var(--font-headline)",
+            fontSize: "0.65rem",
+            fontWeight: 700,
+            color: "var(--color-hero-muted)",
+            textTransform: "uppercase",
+            letterSpacing: "0.15em",
+            opacity: 0.7,
+          }}
+        >
+          Explore
+        </span>
+        <ChevronDown
+          style={{ width: "20px", height: "20px", color: "var(--color-warm-accent)" }}
+          strokeWidth={2.5}
+        />
+      </motion.div>
+
+      {/* Ping keyframes for live dot */}
+      <style>{`
+        @keyframes ping {
+          75%, 100% {
+            transform: scale(2);
+            opacity: 0;
+          }
+        }
+      `}</style>
     </section>
   );
 }

@@ -534,7 +534,7 @@ export default function AdminPage() {
   };
 
   const ADMIN_PASS =
-    process.env.NEXT_PUBLIC_ADMIN_PASSWORD || "admin2026";
+    process.env.NEXT_PUBLIC_ADMIN_PASSWORD || "admin2031";
 
   const handleLogin = (e: React.FormEvent) => {
     e.preventDefault();
