@@ -349,7 +349,7 @@ export default function AdminPage() {
       }
 
       try {
-        const compressedResult = await compressImageFile(file);
+        const compressedResult = await compressImageFile(file, 1200, 1200, 0.75);
         setSlideImageUrl((prev) => {
           if (!prev.trim()) {
             setSlideFileName(file.name);
@@ -434,7 +434,7 @@ export default function AdminPage() {
     }
 
     try {
-      const compressedBase64 = await compressImageFile(file);
+      const compressedBase64 = await compressImageFile(file, 400, 400, 0.72);
       setPhoto(compressedBase64);
       setFileName(file.name);
     } catch (err) {
@@ -2407,9 +2407,17 @@ export default function AdminPage() {
                               }
                               const reader = new FileReader();
                               reader.onload = async (event) => {
-                                const base64 = event.target?.result as string;
-                                await updateStudent(s.id, { photo_url: base64 });
-                                setResultSuccessMsg(`✅ Photo updated for ${s.name}!`);
+                                try {
+                                  // Compress to small avatar size before saving to Firestore
+                                  const compressed = await compressImageFile(file, 400, 400, 0.72);
+                                  await updateStudent(s.id, { photo_url: compressed });
+                                  setResultSuccessMsg(`✅ Photo updated for ${s.name}!`);
+                                } catch {
+                                  // Fallback: use raw base64 if compression fails
+                                  const base64 = event.target?.result as string;
+                                  await updateStudent(s.id, { photo_url: base64 });
+                                  setResultSuccessMsg(`✅ Photo updated for ${s.name}!`);
+                                }
                                 setTimeout(() => setResultSuccessMsg(""), 3000);
                               };
                               reader.readAsDataURL(file);
