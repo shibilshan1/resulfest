@@ -98,7 +98,7 @@ export default function AdminPage() {
   // Edit Result state
   const [editingResultId, setEditingResultId] = useState<string | null>(null);
   const [editResultPosition, setEditResultPosition] = useState<1 | 2 | 3 | null>(null);
-  const [editResultGrade, setEditResultGrade] = useState("A");
+  const [editResultGrade, setEditResultGrade] = useState("");
   const [editResultPoints, setEditResultPoints] = useState<number>(0);
   const [editResultStudentId, setEditResultStudentId] = useState("");
   const [allResultsSearch, setAllResultsSearch] = useState("");
@@ -120,9 +120,9 @@ export default function AdminPage() {
   // Results Entry Form state (Dynamic Winner Rows for multiple 1st, 2nd, 3rd, or grade winners)
   const [selectedProgId, setSelectedProgId] = useState("");
   const [winnerRows, setWinnerRows] = useState<WinnerRow[]>([
-    { id: "row-1", studentId: "", position: 1, grade: "A", points: 5 },
-    { id: "row-2", studentId: "", position: 2, grade: "B", points: 3 },
-    { id: "row-3", studentId: "", position: 3, grade: "C", points: 1 },
+    { id: "row-1", studentId: "", position: 1, grade: "", points: 15 },
+    { id: "row-2", studentId: "", position: 2, grade: "", points: 10 },
+    { id: "row-3", studentId: "", position: 3, grade: "", points: 5 },
   ]);
 
   // Quick Score state
@@ -146,6 +146,7 @@ export default function AdminPage() {
   // Edit Student Modal state
   const [editingStudent, setEditingStudent] = useState<Student | null>(null);
   const [editStudName, setEditStudName] = useState("");
+  const [editStudChestNo, setEditStudChestNo] = useState<number | "">("");
   const [editStudTeamId, setEditStudTeamId] = useState("");
   const [editStudGrade, setEditStudGrade] = useState("A");
   const [editStudPhoto, setEditStudPhoto] = useState("");
@@ -235,6 +236,7 @@ export default function AdminPage() {
       if (s) {
         setEditingStudent(s);
         setEditStudName(s.name);
+        setEditStudChestNo(s.chest_no ?? "");
         setEditStudTeamId(s.team_id);
         setEditStudGrade(s.grade || "A");
         setEditStudPhoto(s.photo_url || UNKNOWN_PERSON_AVATAR);
@@ -258,6 +260,7 @@ export default function AdminPage() {
           if (s) {
             setEditingStudent(s);
             setEditStudName(s.name);
+            setEditStudChestNo(s.chest_no ?? "");
             setEditStudTeamId(s.team_id);
             setEditStudGrade(s.grade || "A");
             setEditStudPhoto(s.photo_url || UNKNOWN_PERSON_AVATAR);
@@ -490,15 +493,15 @@ export default function AdminPage() {
           id: `row-exist-${i}-${Date.now()}`,
           studentId: r.student_id,
           position: r.position || null,
-          grade: r.grade || "A",
+          grade: r.grade || "",
           points: r.points_awarded,
         }))
       );
     } else {
       setWinnerRows([
-        { id: `row-1-${Date.now()}`, studentId: "", position: 1, grade: "A", points: prog.points_1st || 15 },
-        { id: `row-2-${Date.now()}`, studentId: "", position: 2, grade: "B", points: prog.points_2nd || 10 },
-        { id: `row-3-${Date.now()}`, studentId: "", position: 3, grade: "C", points: prog.points_3rd || 5 },
+        { id: `row-1-${Date.now()}`, studentId: "", position: 1, grade: "", points: prog.points_1st || 15 },
+        { id: `row-2-${Date.now()}`, studentId: "", position: 2, grade: "", points: prog.points_2nd || 10 },
+        { id: `row-3-${Date.now()}`, studentId: "", position: 3, grade: "", points: prog.points_3rd || 5 },
       ]);
     }
   };
@@ -517,7 +520,7 @@ export default function AdminPage() {
         id: `row-${Date.now()}-${Math.random().toString(36).substring(2, 6)}`,
         studentId: "",
         position: defaultPos,
-        grade: "A",
+        grade: "",
         points: pts,
       },
     ]);
@@ -591,6 +594,7 @@ export default function AdminPage() {
   const handleOpenEditStudent = (s: Student) => {
     setEditingStudent(s);
     setEditStudName(s.name);
+    setEditStudChestNo(s.chest_no ?? "");
     setEditStudTeamId(s.team_id);
     setEditStudGrade(s.grade || "A");
     setEditStudPhoto(s.photo_url || UNKNOWN_PERSON_AVATAR);
@@ -611,6 +615,7 @@ export default function AdminPage() {
     if (!editingStudent) return;
     await updateStudent(editingStudent.id, {
       name: editStudName,
+      chest_no: typeof editStudChestNo === "number" ? editStudChestNo : undefined,
       team_id: editStudTeamId,
       grade: editStudGrade,
       photo_url: editStudPhoto,
@@ -1098,7 +1103,7 @@ export default function AdminPage() {
                           )}
                         </div>
 
-                        <div className="grid grid-cols-1 sm:grid-cols-4 gap-3">
+                        <div className="grid grid-cols-1 sm:grid-cols-5 gap-3">
                           {/* Position / Status Selector */}
                           <div>
                             <label className="text-[10px] text-slate-400 block mb-1">Status / Position</label>
@@ -1294,6 +1299,32 @@ export default function AdminPage() {
                               className="w-full px-3 py-2 rounded-xl bg-slate-900 border border-amber-500/40 text-xs text-amber-300 font-bold focus:outline-none focus:border-amber-400"
                             />
                           </div>
+
+                          {/* Grade Option */}
+                          <div>
+                            <label className="text-[10px] text-slate-400 block mb-1">Grade</label>
+                            <select
+                              value={row.grade || ""}
+                              onChange={(e) => {
+                                const selectedGrade = e.target.value;
+                                updateWinnerRow(row.id, "grade", selectedGrade);
+                                if (row.position === null && selectedGrade) {
+                                  const prog = programs.find((p) => p.id === selectedProgId);
+                                  if (selectedGrade === "A") updateWinnerRow(row.id, "points", prog?.points_A || 5);
+                                  else if (selectedGrade === "B") updateWinnerRow(row.id, "points", prog?.points_B || 3);
+                                  else if (selectedGrade === "C") updateWinnerRow(row.id, "points", prog?.points_C || 2);
+                                  else if (selectedGrade === "D") updateWinnerRow(row.id, "points", prog?.points_D || 1);
+                                }
+                              }}
+                              className="w-full px-3 py-2 rounded-xl bg-slate-900 border border-amber-500/40 text-xs text-amber-300 font-bold focus:outline-none focus:border-amber-400"
+                            >
+                              <option value="">No Grade</option>
+                              <option value="A">Grade A</option>
+                              <option value="B">Grade B</option>
+                              <option value="C">Grade C</option>
+                              <option value="D">Grade D</option>
+                            </select>
+                          </div>
                         </div>
                       </div>
                     );
@@ -1465,6 +1496,22 @@ export default function AdminPage() {
                                   className="w-full px-3 py-2 rounded-xl bg-slate-900 border border-blue-500/40 text-xs text-blue-300 font-bold focus:outline-none focus:border-blue-400"
                                 />
                               </div>
+
+                              {/* Grade */}
+                              <div>
+                                <label className="text-[10px] text-slate-400 block mb-1">Grade</label>
+                                <select
+                                  value={editResultGrade || ""}
+                                  onChange={(e) => setEditResultGrade(e.target.value)}
+                                  className="w-full px-3 py-2 rounded-xl bg-slate-900 border border-blue-500/40 text-xs text-blue-300 font-bold focus:outline-none focus:border-blue-400"
+                                >
+                                  <option value="">No Grade</option>
+                                  <option value="A">Grade A</option>
+                                  <option value="B">Grade B</option>
+                                  <option value="C">Grade C</option>
+                                  <option value="D">Grade D</option>
+                                </select>
+                              </div>
                             </div>
 
                             <div className="flex items-center justify-end gap-2 pt-1">
@@ -1562,7 +1609,7 @@ export default function AdminPage() {
                               onClick={() => {
                                 setEditingResultId(r.id);
                                 setEditResultPosition(r.position || null);
-                                setEditResultGrade(r.grade || "A");
+                                setEditResultGrade(r.grade || "");
                                 setEditResultPoints(r.points_awarded);
                                 setEditResultStudentId(r.student_id);
                               }}
@@ -2204,28 +2251,45 @@ export default function AdminPage() {
               </h3>
               <form onSubmit={handleAddStudent} className="space-y-4">
                 <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-                  <input
-                    type="text"
-                    placeholder="Student Full Name"
-                    value={studName}
-                    onChange={(e) => setStudName(e.target.value)}
-                    required
-                    className="px-3 py-2 rounded-xl bg-slate-900 border border-white/10 text-xs text-slate-100 focus:outline-none focus:border-amber-400"
-                  />
-                  <select
-                    value={studTeamId}
-                    onChange={(e) => setStudTeamId(e.target.value)}
-                    required
-                    className="px-3 py-2 rounded-xl bg-slate-900 border border-white/10 text-xs text-slate-100 focus:outline-none focus:border-amber-400"
-                  >
-                    <option value="">-- Assign Team --</option>
-                    {teams.map((t) => (
-                      <option key={t.id} value={t.id}>
-                        {t.name}
-                      </option>
-                    ))}
-                  </select>
+                  <div>
+                    <label className="text-[10px] text-slate-400 block mb-1">Student Full Name</label>
+                    <input
+                      type="text"
+                      placeholder="Student Full Name"
+                      value={studName}
+                      onChange={(e) => setStudName(e.target.value)}
+                      required
+                      className="w-full px-3 py-2 rounded-xl bg-slate-900 border border-white/10 text-xs text-slate-100 focus:outline-none focus:border-amber-400"
+                    />
+                  </div>
 
+                  <div>
+                    <label className="text-[10px] text-slate-400 block mb-1">Assign Team / Group</label>
+                    <select
+                      value={studTeamId}
+                      onChange={(e) => setStudTeamId(e.target.value)}
+                      required
+                      className="w-full px-3 py-2 rounded-xl bg-slate-900 border border-white/10 text-xs text-slate-100 focus:outline-none focus:border-amber-400"
+                    >
+                      <option value="">-- Assign Team --</option>
+                      {teams.map((t) => (
+                        <option key={t.id} value={t.id}>
+                          {t.name}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+
+                  <div>
+                    <label className="text-[10px] text-slate-400 block mb-1">Chest No. (optional)</label>
+                    <input
+                      type="number"
+                      placeholder="Chest # (e.g. 101)"
+                      value={studChestNo}
+                      onChange={(e) => setStudChestNo(e.target.value ? Number(e.target.value) : "")}
+                      className="w-full px-3 py-2 rounded-xl bg-slate-900 border border-amber-500/30 text-xs text-amber-300 font-bold focus:outline-none focus:border-amber-400"
+                    />
+                  </div>
                 </div>
 
                 {/* Profile Picture Option */}
@@ -2544,7 +2608,18 @@ export default function AdminPage() {
                         </select>
                       </div>
 
-
+                      <div>
+                        <label className="text-xs font-semibold text-slate-300 block mb-1">
+                          Chest No.
+                        </label>
+                        <input
+                          type="number"
+                          placeholder="Chest #"
+                          value={editStudChestNo}
+                          onChange={(e) => setEditStudChestNo(e.target.value ? Number(e.target.value) : "")}
+                          className="w-full px-3 py-2.5 rounded-xl bg-slate-900 border border-amber-500/30 text-xs text-amber-300 font-bold focus:outline-none focus:border-amber-400"
+                        />
+                      </div>
                     </div>
 
                     {/* Photo Edit Options */}

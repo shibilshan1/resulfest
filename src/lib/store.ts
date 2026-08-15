@@ -503,8 +503,6 @@ export function useFestStore() {
   };
 
   const addTeam = async (name: string, color: string, logo_url?: string) => {
-    if (!db) return;
-    const database = db;
     const teamId = `team-${Date.now()}`;
     const newTeam: Team = {
       id: teamId,
@@ -514,11 +512,15 @@ export function useFestStore() {
       total_score: 0,
     };
 
-    try {
-      await setDoc(doc(database, "teams", teamId), newTeam);
-      console.log("✅ Team added to Firebase!");
-    } catch (err) {
-      console.error("Failed to add team to Firebase:", err);
+    setRawTeams((prev) => [...prev, newTeam]);
+
+    if (db && isFirebaseConfigured) {
+      try {
+        await setDoc(doc(db, "teams", teamId), newTeam);
+        console.log("✅ Team added to Firebase!");
+      } catch (err) {
+        console.error("Failed to add team to Firebase:", err);
+      }
     }
   };
 
@@ -529,8 +531,6 @@ export function useFestStore() {
     chest_no?: number,
     photo_url?: string
   ) => {
-    if (!db) return;
-    const database = db;
     const studentId = `stud-${Date.now()}`;
     const newStudent: Student = {
       id: studentId,
@@ -542,43 +542,54 @@ export function useFestStore() {
       total_points: 0,
     };
 
-    try {
-      await setDoc(doc(database, "students", studentId), newStudent);
-      console.log("✅ Student added to Firebase!");
-    } catch (err) {
-      console.error("Failed to add student to Firebase:", err);
+    setRawStudents((prev) => [...prev, newStudent]);
+
+    if (db && isFirebaseConfigured) {
+      try {
+        await setDoc(doc(db, "students", studentId), newStudent);
+        console.log("✅ Student added to Firebase!");
+      } catch (err) {
+        console.error("Failed to add student to Firebase:", err);
+      }
     }
   };
 
   const updateStudent = async (studentId: string, updates: Partial<Student>) => {
-    if (!db) return;
-    const database = db;
-    try {
-      await setDoc(doc(database, "students", studentId), updates, { merge: true });
-      console.log("✅ Student updated in Firebase!");
-    } catch (err) {
-      console.error("Failed to update student in Firebase:", err);
+    setRawStudents((prev) =>
+      prev.map((s) => (s.id === studentId ? { ...s, ...updates } : s))
+    );
+
+    if (db && isFirebaseConfigured) {
+      try {
+        await setDoc(doc(db, "students", studentId), updates, { merge: true });
+        console.log("✅ Student updated in Firebase!");
+      } catch (err) {
+        console.error("Failed to update student in Firebase:", err);
+      }
     }
   };
 
   const deleteStudent = async (studentId: string) => {
-    if (!db) return;
-    const database = db;
-    try {
-      const batch = writeBatch(database);
-      batch.delete(doc(database, "students", studentId));
+    setRawStudents((prev) => prev.filter((s) => s.id !== studentId));
+    setResults((prev) => prev.filter((r) => r.student_id !== studentId));
 
-      const resultsSnapshot = await getDocs(collection(database, "results"));
-      resultsSnapshot.docs.forEach((docSnap: QueryDocumentSnapshot<DocumentData>) => {
-        if (docSnap.data().student_id === studentId) {
-          batch.delete(docSnap.ref);
-        }
-      });
+    if (db && isFirebaseConfigured) {
+      try {
+        const batch = writeBatch(db);
+        batch.delete(doc(db, "students", studentId));
 
-      await batch.commit();
-      console.log("✅ Student deleted from Firebase!");
-    } catch (err) {
-      console.error("Failed to delete student from Firebase:", err);
+        const resultsSnapshot = await getDocs(collection(db, "results"));
+        resultsSnapshot.docs.forEach((docSnap: QueryDocumentSnapshot<DocumentData>) => {
+          if (docSnap.data().student_id === studentId) {
+            batch.delete(docSnap.ref);
+          }
+        });
+
+        await batch.commit();
+        console.log("✅ Student deleted from Firebase!");
+      } catch (err) {
+        console.error("Failed to delete student from Firebase:", err);
+      }
     }
   };
 
@@ -590,8 +601,6 @@ export function useFestStore() {
     points_2nd: number = 3,
     points_3rd: number = 1
   ) => {
-    if (!db) return;
-    const database = db;
     const progId = `prog-${Date.now()}`;
     const newProg: Program = {
       id: progId,
@@ -608,55 +617,69 @@ export function useFestStore() {
       points_D: 1,
     };
 
-    try {
-      await setDoc(doc(database, "programs", progId), newProg);
-      console.log("✅ Program added to Firebase!");
-    } catch (err) {
-      console.error("Failed to add program to Firebase:", err);
+    setPrograms((prev) => [...prev, newProg]);
+
+    if (db && isFirebaseConfigured) {
+      try {
+        await setDoc(doc(db, "programs", progId), newProg);
+        console.log("✅ Program added to Firebase!");
+      } catch (err) {
+        console.error("Failed to add program to Firebase:", err);
+      }
     }
   };
 
   const updateProgram = async (programId: string, updates: Partial<Program>) => {
-    if (!db) return;
-    const database = db;
-    try {
-      await setDoc(doc(database, "programs", programId), updates, { merge: true });
-      console.log("✅ Program updated in Firebase!");
-    } catch (err) {
-      console.error("Failed to update program in Firebase:", err);
+    setPrograms((prev) =>
+      prev.map((p) => (p.id === programId ? { ...p, ...updates } : p))
+    );
+
+    if (db && isFirebaseConfigured) {
+      try {
+        await setDoc(doc(db, "programs", programId), updates, { merge: true });
+        console.log("✅ Program updated in Firebase!");
+      } catch (err) {
+        console.error("Failed to update program in Firebase:", err);
+      }
     }
   };
 
   const deleteProgram = async (programId: string) => {
-    if (!db) return;
-    const database = db;
-    try {
-      const batch = writeBatch(database);
-      batch.delete(doc(database, "programs", programId));
+    setPrograms((prev) => prev.filter((p) => p.id !== programId));
+    setResults((prev) => prev.filter((r) => r.program_id !== programId));
 
-      // Also delete all results for this program
-      const resultsSnapshot = await getDocs(collection(database, "results"));
-      resultsSnapshot.docs.forEach((docSnap: QueryDocumentSnapshot<DocumentData>) => {
-        if (docSnap.data().program_id === programId) {
-          batch.delete(docSnap.ref);
-        }
-      });
+    if (db && isFirebaseConfigured) {
+      try {
+        const batch = writeBatch(db);
+        batch.delete(doc(db, "programs", programId));
 
-      await batch.commit();
-      console.log("✅ Program and its results deleted from Firebase!");
-    } catch (err) {
-      console.error("Failed to delete program from Firebase:", err);
+        const resultsSnapshot = await getDocs(collection(db, "results"));
+        resultsSnapshot.docs.forEach((docSnap: QueryDocumentSnapshot<DocumentData>) => {
+          if (docSnap.data().program_id === programId) {
+            batch.delete(docSnap.ref);
+          }
+        });
+
+        await batch.commit();
+        console.log("✅ Program and its results deleted from Firebase!");
+      } catch (err) {
+        console.error("Failed to delete program from Firebase:", err);
+      }
     }
   };
 
   const updateTeam = async (teamId: string, updates: Partial<Team>) => {
-    if (!db) return;
-    const database = db;
-    try {
-      await setDoc(doc(database, "teams", teamId), updates, { merge: true });
-      console.log("✅ Team updated in Firebase!");
-    } catch (err) {
-      console.error("Failed to update team in Firebase:", err);
+    setRawTeams((prev) =>
+      prev.map((t) => (t.id === teamId ? { ...t, ...updates } : t))
+    );
+
+    if (db && isFirebaseConfigured) {
+      try {
+        await setDoc(doc(db, "teams", teamId), updates, { merge: true });
+        console.log("✅ Team updated in Firebase!");
+      } catch (err) {
+        console.error("Failed to update team in Firebase:", err);
+      }
     }
   };
 
