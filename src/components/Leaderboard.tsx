@@ -252,6 +252,7 @@ export function Leaderboard({
 
     results.forEach((r) => {
       const prog = programMap.get(r.program_id);
+      if (prog && !prog.is_revealed) return;
       if (prog && isProgramInCategory(prog, selectedCategoryFilter)) {
         if (r.student_id && map[r.student_id] !== undefined) {
           map[r.student_id] += (r.points_awarded || 0);
@@ -768,7 +769,11 @@ export function Leaderboard({
                     {/* Expanded details: individual gained points, grade & status */}
                     {expandedStudentId === stud.id && (() => {
                       const studentResults = results
-                        .filter((r) => r.student_id === stud.id)
+                        .filter((r) => {
+                          if (r.student_id !== stud.id) return false;
+                          const prog = programMap.get(r.program_id) || programs.find((p) => p.id === r.program_id);
+                          return prog ? prog.is_revealed : true;
+                        })
                         .sort((a, b) => (b.points_awarded || 0) - (a.points_awarded || 0));
 
                       if (studentResults.length === 0) {
@@ -1175,7 +1180,11 @@ export function Leaderboard({
 
                   // Individual results & gained points breakdown per event/program
                   const studentResults = results
-                    .filter((r) => r.student_id === stud.id)
+                    .filter((r) => {
+                      if (r.student_id !== stud.id) return false;
+                      const prog = programMap.get(r.program_id) || programs.find((p) => p.id === r.program_id);
+                      return prog ? prog.is_revealed : true;
+                    })
                     .sort((a, b) => (b.points_awarded || 0) - (a.points_awarded || 0));
 
                   const firstsCount  = studentResults.filter((r) => r.position === 1).length;

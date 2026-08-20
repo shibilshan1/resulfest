@@ -259,7 +259,11 @@ export function CheckYourPointsRank({
                     : "#3B82F6";
 
                   const studentResults = results
-                    .filter((r) => r.student_id === stud.id)
+                    .filter((r) => {
+                      if (r.student_id !== stud.id) return false;
+                      const prog = programs.find((p) => p.id === r.program_id);
+                      return prog ? prog.is_revealed : true;
+                    })
                     .sort((a, b) => (b.points_awarded || 0) - (a.points_awarded || 0));
 
                   const firstsCount  = studentResults.filter((r) => r.position === 1).length;

@@ -39,7 +39,11 @@ export function StudentPointsModal({
 
   const team = teams.find((t) => t.id === student.team_id);
   const studentResults = results
-    .filter((r) => r.student_id === student.id)
+    .filter((r) => {
+      if (r.student_id !== student.id) return false;
+      const prog = programs.find((p) => p.id === r.program_id);
+      return prog ? prog.is_revealed : true;
+    })
     .sort((a, b) => (b.points_awarded || 0) - (a.points_awarded || 0));
 
   const totalGainedPoints = studentResults.reduce(

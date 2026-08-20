@@ -304,6 +304,10 @@ export function useFestStore() {
     rawTeams.forEach((t) => (teamPointsMap[t.id] = 0));
 
     results.forEach((r) => {
+      // Exclude results for programs that are hidden (is_revealed === false)
+      const prog = programs.find((p) => p.id === r.program_id);
+      if (prog && !prog.is_revealed) return;
+
       // Check if result is awarded directly to a Team/Group (e.g. General Programmes)
       const directTeam = rawTeams.find((t) => t.id === r.student_id || (r.team_id && t.id === r.team_id));
       if (directTeam) {
@@ -354,7 +358,7 @@ export function useFestStore() {
     }));
 
     return { teams: computedTeams, students: computedStudents };
-  }, [rawTeams, rawStudents, results]);
+  }, [rawTeams, rawStudents, results, programs]);
 
   // ─── Direct Firebase Mutations ────────────────────────────────────
 
@@ -731,9 +735,7 @@ export function useFestStore() {
   };
 
   const getScoreProgressionData = (): ScoreProgressionPoint[] => {
-    const activePrograms = programs.filter(
-      (p) => p.is_revealed || results.some((r) => r.program_id === p.id)
-    );
+    const activePrograms = programs.filter((p) => p.is_revealed);
     if (activePrograms.length === 0) return [];
 
     const runningScores: Record<string, number> = {};

@@ -26,10 +26,14 @@ export function LiveResultPopup({
   const [isDismissed, setIsDismissed] = useState(false);
   const [isAnimating, setIsAnimating] = useState(false);
 
-  // 1. Filter results to 1st AND 2nd place positions (position 1 & 2) with valid student & points > 0
-  const topPlaceResults = results.filter(
-    (r) => r.student_id && (r.position === 1 || r.position === 2) && (r.points_awarded || 0) > 0
-  );
+  // 1. Filter results to 1st AND 2nd place positions (position 1 & 2) with valid student, points > 0, AND program is revealed
+  const topPlaceResults = results.filter((r) => {
+    if (!r.student_id || (r.position !== 1 && r.position !== 2) || (r.points_awarded || 0) <= 0) {
+      return false;
+    }
+    const prog = programs.find((p) => p.id === r.program_id);
+    return prog ? prog.is_revealed : true;
+  });
 
   // 2. Map program IDs to their latest update timestamp
   const programTimestamps = new Map<string, number>();
