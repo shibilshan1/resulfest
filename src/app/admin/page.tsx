@@ -983,11 +983,20 @@ export default function AdminPage() {
                     <Search className="w-4 h-4 text-slate-400 absolute left-3.5 top-3" />
                     <input
                       type="text"
-                      placeholder="Type to search program by name or category (e.g. Burdha, Thilawath, Essay)..."
+                      placeholder="Type to search program by name, grade (Sanaviyya, Bakalooriyya), category..."
                       value={programSearch}
                       onChange={(e) => setProgramSearch(e.target.value)}
-                      className="w-full pl-9 pr-4 py-2.5 rounded-xl bg-slate-900 border border-amber-500/30 text-xs text-slate-100 focus:outline-none focus:border-amber-400 mb-2"
+                      className="w-full pl-9 pr-8 py-2.5 rounded-xl bg-slate-900 border border-amber-500/30 text-xs text-slate-100 focus:outline-none focus:border-amber-400 mb-2"
                     />
+                    {programSearch && (
+                      <button
+                        type="button"
+                        onClick={() => setProgramSearch("")}
+                        className="absolute right-2.5 top-2.5 text-slate-400 hover:text-white p-0.5 rounded-full hover:bg-slate-800"
+                      >
+                        <X className="w-3.5 h-3.5" />
+                      </button>
+                    )}
                   </div>
 
                   <select
@@ -999,21 +1008,27 @@ export default function AdminPage() {
                     <option value="">-- Choose Program / Event --</option>
                     {programs
                       .filter((p) => {
+                        const query = programSearch.trim().toLowerCase();
                         const matchesSearch =
-                          p.name.toLowerCase().includes(programSearch.toLowerCase()) ||
-                          p.category.toLowerCase().includes(programSearch.toLowerCase());
+                          !query ||
+                          p.name.toLowerCase().includes(query) ||
+                          p.category.toLowerCase().includes(query) ||
+                          (p.grade && p.grade.toLowerCase().includes(query)) ||
+                          p.id.toLowerCase().includes(query);
+
                         const matchesFilter =
                           adminProgBracketFilter === "All" ||
                           (adminProgBracketFilter === "General" && (p.category === "General" || p.grade === "General" || p.id.startsWith("gen-"))) ||
-                          (adminProgBracketFilter === "Sanaviyya" && (p.grade === "Sanaviyya" || p.grade === "A" || p.name.includes("Sanaviyya") || p.name.includes("Bracket A"))) ||
-                          (adminProgBracketFilter === "Bakalooriyya" && (p.grade === "Bakalooriyya" || p.grade === "B" || p.name.includes("Bakalooriyya") || p.name.includes("Bracket B"))) ||
+                          (adminProgBracketFilter === "Sanaviyya" && (p.grade === "Sanaviyya" || p.grade === "A" || p.name.includes("Sanaviyya") || p.name.includes("Bracket A") || p.id.startsWith("san-"))) ||
+                          (adminProgBracketFilter === "Bakalooriyya" && (p.grade === "Bakalooriyya" || p.grade === "Bakalooria" || p.grade === "B" || p.name.includes("Bakalooriyya") || p.name.includes("Bakalooria") || p.name.includes("Bracket B") || p.id.startsWith("bak-"))) ||
                           (adminProgBracketFilter === "Stage" && p.category === "Stage") ||
                           (adminProgBracketFilter === "Off-Stage" && p.category === "Off-Stage");
+
                         return matchesSearch && matchesFilter;
                       })
                       .map((p) => (
                         <option key={p.id} value={p.id}>
-                          {p.name} [{p.category}] {p.is_revealed ? "✓ Revealed" : "(Hidden)"}
+                          {p.name} [{p.category}{p.grade ? ` • ${p.grade}` : ""}] {p.is_revealed ? "✓ Revealed" : "(Hidden)"}
                         </option>
                       ))}
                   </select>
@@ -1814,8 +1829,27 @@ export default function AdminPage() {
             {/* Programs List with Reveal Toggles & Grades */}
             <div className="space-y-3">
               <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-                <h3 className="text-sm font-bold text-slate-300">
-                  Programs & Public Visibility ({programs.length})
+                <h3 className="text-sm font-bold text-slate-300 flex items-center gap-2">
+                  <span>Programs & Public Visibility</span>
+                  <span className="text-xs px-2 py-0.5 rounded-full bg-amber-500/20 text-amber-300 font-extrabold border border-amber-500/30">
+                    {programs.filter((p) => {
+                      const query = programTabSearch.trim().toLowerCase();
+                      const matchesSearch =
+                        !query ||
+                        p.name.toLowerCase().includes(query) ||
+                        p.category.toLowerCase().includes(query) ||
+                        (p.grade && p.grade.toLowerCase().includes(query)) ||
+                        p.id.toLowerCase().includes(query);
+                      const matchesFilter =
+                        adminProgBracketFilter === "All" ||
+                        (adminProgBracketFilter === "General" && (p.category === "General" || p.grade === "General" || p.id.startsWith("gen-"))) ||
+                        (adminProgBracketFilter === "Sanaviyya" && (p.grade === "Sanaviyya" || p.grade === "A" || p.name.includes("Sanaviyya") || p.name.includes("Bracket A") || p.id.startsWith("san-"))) ||
+                        (adminProgBracketFilter === "Bakalooriyya" && (p.grade === "Bakalooriyya" || p.grade === "Bakalooria" || p.grade === "B" || p.name.includes("Bakalooriyya") || p.name.includes("Bakalooria") || p.name.includes("Bracket B") || p.id.startsWith("bak-"))) ||
+                        (adminProgBracketFilter === "Stage" && p.category === "Stage") ||
+                        (adminProgBracketFilter === "Off-Stage" && p.category === "Off-Stage");
+                      return matchesSearch && matchesFilter;
+                    }).length} of {programs.length}
+                  </span>
                 </h3>
 
                 <div className="flex flex-wrap items-center gap-1.5">
@@ -1839,17 +1873,47 @@ export default function AdminPage() {
                 </div>
               </div>
 
+              {/* Program Search Input Bar */}
+              <div className="relative">
+                <Search className="w-4 h-4 text-slate-400 absolute left-3.5 top-3" />
+                <input
+                  type="text"
+                  placeholder="Search program by name, grade (Sanaviyya, Bakalooriyya), category (Stage/Off-Stage)..."
+                  value={programTabSearch}
+                  onChange={(e) => setProgramTabSearch(e.target.value)}
+                  className="w-full pl-9 pr-8 py-2.5 rounded-xl bg-slate-900 border border-white/10 text-xs text-slate-100 placeholder-slate-500 focus:outline-none focus:border-amber-400"
+                />
+                {programTabSearch && (
+                  <button
+                    type="button"
+                    onClick={() => setProgramTabSearch("")}
+                    className="absolute right-2.5 top-2.5 text-slate-400 hover:text-white p-0.5 rounded-full hover:bg-slate-800"
+                  >
+                    <X className="w-3.5 h-3.5" />
+                  </button>
+                )}
+              </div>
+
               <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
                 {programs
                   .filter((p) => {
-                    return (
+                    const query = programTabSearch.trim().toLowerCase();
+                    const matchesSearch =
+                      !query ||
+                      p.name.toLowerCase().includes(query) ||
+                      p.category.toLowerCase().includes(query) ||
+                      (p.grade && p.grade.toLowerCase().includes(query)) ||
+                      p.id.toLowerCase().includes(query);
+
+                    const matchesFilter =
                       adminProgBracketFilter === "All" ||
                       (adminProgBracketFilter === "General" && (p.category === "General" || p.grade === "General" || p.id.startsWith("gen-"))) ||
-                      (adminProgBracketFilter === "Sanaviyya" && (p.grade === "Sanaviyya" || p.name.includes("Sanaviyya"))) ||
-                      (adminProgBracketFilter === "Bakalooriyya" && (p.grade === "Bakalooriyya" || p.name.includes("Bakalooriyya"))) ||
+                      (adminProgBracketFilter === "Sanaviyya" && (p.grade === "Sanaviyya" || p.grade === "A" || p.name.includes("Sanaviyya") || p.name.includes("Bracket A") || p.id.startsWith("san-"))) ||
+                      (adminProgBracketFilter === "Bakalooriyya" && (p.grade === "Bakalooriyya" || p.grade === "Bakalooria" || p.grade === "B" || p.name.includes("Bakalooriyya") || p.name.includes("Bakalooria") || p.name.includes("Bracket B") || p.id.startsWith("bak-"))) ||
                       (adminProgBracketFilter === "Stage" && p.category === "Stage") ||
-                      (adminProgBracketFilter === "Off-Stage" && p.category === "Off-Stage")
-                    );
+                      (adminProgBracketFilter === "Off-Stage" && p.category === "Off-Stage");
+
+                    return matchesSearch && matchesFilter;
                   })
                   .map((p) => (
                   <div
