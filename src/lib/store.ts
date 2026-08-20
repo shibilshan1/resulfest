@@ -366,6 +366,7 @@ export function useFestStore() {
     try {
       await updateDoc(doc(database, "programs", programId), {
         is_revealed: !target.is_revealed,
+        updated_at: new Date().toISOString(),
       });
     } catch (err) {
       console.error("Failed to toggle program reveal in Firebase:", err);

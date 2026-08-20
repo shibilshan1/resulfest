@@ -43,6 +43,7 @@ export function ResultsAccordion({
 
   const categories = [
     "All",
+    "Revealed",
     "General",
     "Sanaviyya",
     "Bakalooriyya",
@@ -50,8 +51,15 @@ export function ResultsAccordion({
     "Off-Stage",
   ];
 
+  const revealedCount = programs.filter(
+    (p) => p.is_revealed || results.some((r) => r.program_id === p.id)
+  ).length;
+
   const filteredPrograms = programs.filter((p) => {
     if (selectedCategory === "All") return true;
+    if (selectedCategory === "Revealed" || selectedCategory === "Published") {
+      return p.is_revealed || results.some((r) => r.program_id === p.id);
+    }
     if (selectedCategory === "General") {
       return p.category === "General" || p.grade === "General" || p.id.startsWith("gen-");
     }
@@ -87,17 +95,31 @@ export function ResultsAccordion({
 
   // Sort programs so newly revealed/updated programs appear FIRST at the top!
   const sortedPrograms = [...searchFilteredPrograms].sort((a, b) => {
-    if (a.is_revealed !== b.is_revealed) {
-      return a.is_revealed ? -1 : 1;
+    const isA = a.is_revealed || results.some((r) => r.program_id === a.id);
+    const isB = b.is_revealed || results.some((r) => r.program_id === b.id);
+    if (isA !== isB) {
+      return isA ? -1 : 1;
     }
     const timeA = a.updated_at ? new Date(a.updated_at).getTime() : 0;
     const timeB = b.updated_at ? new Date(b.updated_at).getTime() : 0;
     return timeB - timeA;
   });
 
+  // ALL revealed/published programs must ALWAYS be displayed in full every time!
+  // No revealed program will ever be hidden or automatically removed after some time.
+  const revealedProgramsList = sortedPrograms.filter(
+    (p) => p.is_revealed || results.some((r) => r.program_id === p.id)
+  );
+  const pendingProgramsList = sortedPrograms.filter(
+    (p) => !p.is_revealed && !results.some((r) => r.program_id === p.id)
+  );
+
   const displayedPrograms = showAllPrograms
     ? sortedPrograms
-    : sortedPrograms.slice(0, 6);
+    : [
+        ...revealedProgramsList,
+        ...pendingProgramsList.slice(0, Math.max(0, 6 - Math.min(6, revealedProgramsList.length))),
+      ];
 
   const triggerConfetti = () => {
     confetti({
@@ -163,8 +185,13 @@ export function ResultsAccordion({
             key={cat}
             onClick={() => setSelectedCategory(cat)}
             className={`filter-chip${selectedCategory === cat ? " active" : ""}`}
+            style={
+              cat === "Revealed" && selectedCategory !== "Revealed"
+                ? { background: "#ECFDF5", color: "#059669", borderColor: "#A7F3D0" }
+                : undefined
+            }
           >
-            {cat}
+            {cat === "Revealed" ? `✨ Revealed (${revealedCount})` : cat}
           </button>
         ))}
       </div>

@@ -106,7 +106,7 @@ export function Navbar({ activeTab, setActiveTab }: NavbarProps) {
 
   const navItems = [
     { id: "hero",       label: "Home",       icon: Home },
-    { id: "results",    label: "Stage",      icon: Award },
+    { id: "results",    label: "Results",    icon: Award },
     { id: "scoreboard", label: "Scoreboard", icon: Trophy },
     { id: "gallery",    label: "Gallery",    icon: Sparkles },
   ];
