@@ -1604,8 +1604,21 @@ export default function AdminPage() {
                                 )}
 
                               </div>
-                              <div className="text-[10px] text-slate-400 truncate mt-0.5">
-                                {prog?.name || r.program_id}
+                              <div className="flex items-center gap-1.5 mt-0.5 flex-wrap">
+                                <span className="text-[10px] text-slate-400 truncate">
+                                  {prog?.name || r.program_id}
+                                </span>
+                                {prog && (
+                                  <span
+                                    className={`text-[9px] font-bold px-1.5 py-0.5 rounded border ${
+                                      prog.is_revealed
+                                        ? "bg-emerald-500/20 text-emerald-300 border-emerald-500/40"
+                                        : "bg-slate-800 text-slate-400 border-slate-700"
+                                    }`}
+                                  >
+                                    {prog.is_revealed ? "Revealed" : "Hidden"}
+                                  </span>
+                                )}
                               </div>
                             </div>
 
@@ -1619,7 +1632,42 @@ export default function AdminPage() {
                           </div>
 
                           {/* Action Buttons */}
-                          <div className="flex items-center gap-1.5 shrink-0">
+                          <div className="flex items-center gap-1.5 shrink-0 flex-wrap">
+                            {/* Reveal / Hide Toggle */}
+                            {prog && (
+                              <button
+                                type="button"
+                                onClick={async () => {
+                                  await toggleProgramReveal(prog.id);
+                                  setResultSuccessMsg(
+                                    prog.is_revealed
+                                      ? `Program "${prog.name}" results HIDDEN from public view 🙈`
+                                      : `Program "${prog.name}" results REVEALED to public view 👁️`
+                                  );
+                                  setTimeout(() => setResultSuccessMsg(""), 4000);
+                                }}
+                                className={`px-2.5 py-1.5 rounded-lg text-[11px] font-bold transition-all flex items-center gap-1 border ${
+                                  prog.is_revealed
+                                    ? "bg-emerald-500/15 text-emerald-300 border-emerald-500/30 hover:bg-emerald-500/25"
+                                    : "bg-amber-500/15 text-amber-300 border-amber-500/30 hover:bg-amber-500/25"
+                                }`}
+                                title={prog.is_revealed ? "Click to Hide this program from public view" : "Click to Reveal this program to public view"}
+                              >
+                                {prog.is_revealed ? (
+                                  <>
+                                    <Eye className="w-3 h-3 text-emerald-400" />
+                                    <span>Revealed</span>
+                                  </>
+                                ) : (
+                                  <>
+                                    <EyeOff className="w-3 h-3 text-amber-400" />
+                                    <span>Hidden</span>
+                                  </>
+                                )}
+                              </button>
+                            )}
+
+                            {/* Edit */}
                             <button
                               type="button"
                               onClick={() => {
@@ -1634,6 +1682,8 @@ export default function AdminPage() {
                               <Edit className="w-3 h-3" />
                               Edit
                             </button>
+
+                            {/* Cancel */}
                             <button
                               type="button"
                               onClick={async () => {
