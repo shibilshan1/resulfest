@@ -101,17 +101,10 @@ export function ResultsAccordion({
     return timeB - timeA;
   });
 
-  // ALL revealed/published programs must ALWAYS be displayed in full every time!
-  // No revealed program will ever be hidden or automatically removed after some time.
-  const revealedProgramsList = sortedPrograms.filter((p) => p.is_revealed);
-  const pendingProgramsList = sortedPrograms.filter((p) => !p.is_revealed);
-
+  // Display top 6 most recent programs by default; expand to ALL when showAllPrograms is true
   const displayedPrograms = showAllPrograms
     ? sortedPrograms
-    : [
-        ...revealedProgramsList,
-        ...pendingProgramsList.slice(0, Math.max(0, 6 - Math.min(6, revealedProgramsList.length))),
-      ];
+    : sortedPrograms.slice(0, 6);
 
   const triggerConfetti = () => {
     confetti({
@@ -697,63 +690,41 @@ export function ResultsAccordion({
               );
             })}
 
-            {/* Tiny open / expand button for programs */}
-            {filteredPrograms.length > 6 && (
-              <div style={{ display: "flex", justifyContent: "center", alignItems: "center", gap: 10, paddingTop: 8 }}>
-                {showAllPrograms && (
-                  <button
-                    onClick={() => {
-                      setShowAllPrograms(false);
-                      document.getElementById("results")?.scrollIntoView({ behavior: "smooth" });
-                    }}
-                    style={{
-                      display: "inline-flex",
-                      alignItems: "center",
-                      gap: 6,
-                      padding: "7px 16px",
-                      borderRadius: 99,
-                      background: "linear-gradient(135deg, #FFFDF0 0%, #FEF3C7 100%)",
-                      color: "#78350F",
-                      fontSize: 12,
-                      fontWeight: 800,
-                      border: "1.5px solid #FCD34D",
-                      cursor: "pointer",
-                      transition: "all 0.2s ease",
-                      boxShadow: "0 2px 10px rgba(180, 83, 9, 0.18)",
-                    }}
-                    onMouseEnter={(e) => {
-                      e.currentTarget.style.background = "#FEF3C7";
-                    }}
-                    onMouseLeave={(e) => {
-                      e.currentTarget.style.background = "linear-gradient(135deg, #FFFDF0 0%, #FEF3C7 100%)";
-                    }}
-                  >
-                    <ArrowLeft className="w-4 h-4 text-amber-800" />
-                    <span>Go Back</span>
-                  </button>
-                )}
+            {/* Show All / Show Less expand button */}
+            {sortedPrograms.length > 6 && (
+              <div style={{ display: "flex", justifyContent: "center", alignItems: "center", gap: 10, paddingTop: 16 }}>
                 <button
-                  onClick={() => setShowAllPrograms(!showAllPrograms)}
+                  onClick={() => {
+                    const nextShow = !showAllPrograms;
+                    setShowAllPrograms(nextShow);
+                    if (!nextShow) {
+                      document.getElementById("results")?.scrollIntoView({ behavior: "smooth" });
+                    }
+                  }}
                   style={{
                     display: "inline-flex",
                     alignItems: "center",
-                    gap: 6,
-                    padding: "7px 16px",
+                    gap: 8,
+                    padding: "10px 24px",
                     borderRadius: 99,
-                    background: "#E8EFFF",
-                    color: "#1A56DB",
-                    fontSize: 12,
-                    fontWeight: 700,
-                    border: "1px solid #C7D2FE",
+                    background: showAllPrograms
+                      ? "linear-gradient(135deg, #FFFDF0 0%, #FEF3C7 100%)"
+                      : "linear-gradient(135deg, #1A56DB 0%, #1D4ED8 100%)",
+                    color: showAllPrograms ? "#78350F" : "#FFFFFF",
+                    fontSize: 13,
+                    fontWeight: 800,
+                    border: showAllPrograms ? "1.5px solid #FCD34D" : "none",
                     cursor: "pointer",
                     transition: "all 0.2s ease",
-                    boxShadow: "0 2px 8px rgba(26, 86, 219, 0.12)",
+                    boxShadow: showAllPrograms
+                      ? "0 2px 10px rgba(180, 83, 9, 0.18)"
+                      : "0 4px 16px rgba(26, 86, 219, 0.3)",
                   }}
                 >
                   <span>
                     {showAllPrograms
-                      ? "Show Less"
-                      : `Show All Programs (${filteredPrograms.length})`}
+                      ? "Show Less (View Recent 6 Only)"
+                      : `Show All Programs & Results (${sortedPrograms.length})`}
                   </span>
                   <ChevronDown
                     className="w-4 h-4"
