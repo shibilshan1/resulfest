@@ -25,6 +25,25 @@ import {
   QueryDocumentSnapshot,
 } from "firebase/firestore";
 
+const getLocalItem = <T>(key: string, fallback: T): T => {
+  if (typeof window === "undefined") return fallback;
+  try {
+    const cached = localStorage.getItem(key);
+    return cached ? (JSON.parse(cached) as T) : fallback;
+  } catch {
+    return fallback;
+  }
+};
+
+const setLocalItem = (key: string, value: unknown) => {
+  if (typeof window === "undefined") return;
+  try {
+    localStorage.setItem(key, JSON.stringify(value));
+  } catch (e) {
+    console.warn(`Could not save ${key} to localStorage:`, e);
+  }
+};
+
 export function useFestStore() {
   const [rawTeams, setRawTeams] = useState<Team[]>([]);
   const [rawStudents, setRawStudents] = useState<Student[]>([]);
@@ -35,13 +54,21 @@ export function useFestStore() {
 
   // ─── Data loading & Firebase Realtime Listeners ────────────────────
   useEffect(() => {
+    // 1. Initial hydration from LocalStorage (or initial mock fallback)
+    const initialTeams = getLocalItem("kizilelma_teams", INITIAL_TEAMS);
+    const initialStudents = getLocalItem("kizilelma_students", INITIAL_STUDENTS);
+    const initialPrograms = getLocalItem("kizilelma_programs", INITIAL_PROGRAMS);
+    const initialResults = getLocalItem("kizilelma_results", INITIAL_RESULTS);
+    const initialSlideshow = getLocalItem("kizilelma_slideshow_images", INITIAL_SLIDESHOW_IMAGES);
+
+    setRawTeams(initialTeams);
+    setRawStudents(initialStudents);
+    setPrograms(initialPrograms);
+    setResults(initialResults);
+    setSlideshowImages(initialSlideshow);
+
     if (!db || !isFirebaseConfigured) {
-      console.warn("Firebase is not configured. Falling back to local demo data.");
-      setRawTeams(INITIAL_TEAMS);
-      setRawStudents(INITIAL_STUDENTS);
-      setPrograms(INITIAL_PROGRAMS);
-      setResults(INITIAL_RESULTS);
-      setSlideshowImages(INITIAL_SLIDESHOW_IMAGES);
+      console.warn("Firebase is not configured. Running in LocalStorage Backup Mode.");
       setIsLoading(false);
       return;
     }
@@ -85,16 +112,14 @@ export function useFestStore() {
     // 1. Teams listener
     const unsubTeams = onSnapshot(
       collection(database, "teams"),
-      async (snapshot: QuerySnapshot<DocumentData>) => {
-        if (snapshot.empty && !teamsLoaded) {
-          console.log("Firebase 'teams' empty — seeding initial data to Firestore...");
-          await seedFirebase();
-        } else {
+      (snapshot: QuerySnapshot<DocumentData>) => {
+        if (!snapshot.empty) {
           const loadedTeams = snapshot.docs.map((docSnap) => {
             const raw = docSnap.data() as Team;
             return normalizeTeam(raw);
           });
-          setRawTeams(loadedTeams.length > 0 ? loadedTeams : INITIAL_TEAMS);
+          setRawTeams(loadedTeams);
+          setLocalItem("kizilelma_teams", loadedTeams);
         }
         teamsLoaded = true;
         checkFullyLoaded();
@@ -110,10 +135,13 @@ export function useFestStore() {
     const unsubStudents = onSnapshot(
       collection(database, "students"),
       (snapshot: QuerySnapshot<DocumentData>) => {
-        const loadedStudents = snapshot.docs.map(
-          (docSnap: QueryDocumentSnapshot<DocumentData>) => docSnap.data() as Student
-        );
-        setRawStudents(loadedStudents);
+        if (!snapshot.empty) {
+          const loadedStudents = snapshot.docs.map(
+            (docSnap: QueryDocumentSnapshot<DocumentData>) => docSnap.data() as Student
+          );
+          setRawStudents(loadedStudents);
+          setLocalItem("kizilelma_students", loadedStudents);
+        }
         studentsLoaded = true;
         checkFullyLoaded();
       },
@@ -128,10 +156,13 @@ export function useFestStore() {
     const unsubPrograms = onSnapshot(
       collection(database, "programs"),
       (snapshot: QuerySnapshot<DocumentData>) => {
-        const loadedPrograms = snapshot.docs.map(
-          (docSnap: QueryDocumentSnapshot<DocumentData>) => docSnap.data() as Program
-        );
-        setPrograms(loadedPrograms);
+        if (!snapshot.empty) {
+          const loadedPrograms = snapshot.docs.map(
+            (docSnap: QueryDocumentSnapshot<DocumentData>) => docSnap.data() as Program
+          );
+          setPrograms(loadedPrograms);
+          setLocalItem("kizilelma_programs", loadedPrograms);
+        }
         programsLoaded = true;
         checkFullyLoaded();
       },
@@ -150,6 +181,7 @@ export function useFestStore() {
           (docSnap: QueryDocumentSnapshot<DocumentData>) => docSnap.data() as Result
         );
         setResults(loadedResults);
+        setLocalItem("kizilelma_results", loadedResults);
         resultsLoaded = true;
         checkFullyLoaded();
       },
@@ -160,7 +192,7 @@ export function useFestStore() {
       }
     );
 
-    // 5. Slideshow Images listener with LocalStorage Sync
+    // 5. Slideshow Images listener
     const unsubSlideshow = onSnapshot(
       collection(database, "slideshow_images"),
       (snapshot: QuerySnapshot<DocumentData>) => {
@@ -169,33 +201,11 @@ export function useFestStore() {
         );
         if (loaded.length > 0) {
           setSlideshowImages(loaded);
-          try {
-            localStorage.setItem("kizilelma_slideshow_images", JSON.stringify(loaded));
-          } catch (e) {
-            console.warn("Could not save slideshow to localStorage:", e);
-          }
-        } else {
-          // If Firestore is empty, check localStorage fallback
-          try {
-            const cached = localStorage.getItem("kizilelma_slideshow_images");
-            if (cached) {
-              setSlideshowImages(JSON.parse(cached));
-            } else {
-              setSlideshowImages([]);
-            }
-          } catch {
-            setSlideshowImages([]);
-          }
+          setLocalItem("kizilelma_slideshow_images", loaded);
         }
       },
       (err: unknown) => {
         console.error("Slideshow listener error:", err);
-        try {
-          const cached = localStorage.getItem("kizilelma_slideshow_images");
-          if (cached) setSlideshowImages(JSON.parse(cached));
-        } catch {
-          // ignore
-        }
       }
     );
 
@@ -363,17 +373,28 @@ export function useFestStore() {
   // ─── Direct Firebase Mutations ────────────────────────────────────
 
   const toggleProgramReveal = async (programId: string) => {
-    if (!db) return;
-    const database = db;
     const target = programs.find((p) => p.id === programId);
     if (!target) return;
-    try {
-      await updateDoc(doc(database, "programs", programId), {
-        is_revealed: !target.is_revealed,
-        updated_at: new Date().toISOString(),
-      });
-    } catch (err) {
-      console.error("Failed to toggle program reveal in Firebase:", err);
+
+    const newRevealed = !target.is_revealed;
+
+    setPrograms((prev) => {
+      const updated = prev.map((p) =>
+        p.id === programId ? { ...p, is_revealed: newRevealed } : p
+      );
+      setLocalItem("kizilelma_programs", updated);
+      return updated;
+    });
+
+    if (db && isFirebaseConfigured) {
+      try {
+        await updateDoc(doc(db, "programs", programId), {
+          is_revealed: newRevealed,
+          updated_at: new Date().toISOString(),
+        });
+      } catch (err) {
+        console.error("Failed to toggle program reveal in Firebase:", err);
+      }
     }
   };
 
@@ -386,64 +407,80 @@ export function useFestStore() {
       points?: number | "";
     }>
   ) => {
-    if (!db) return;
-    const database = db;
     const prog = programs.find((p) => p.id === programId);
     if (!prog) return;
 
     const now = new Date().toISOString();
 
-    try {
-      // 1. Delete old results for this program
-      const resultsSnapshot = await getDocs(collection(database, "results"));
-      const batch = writeBatch(database);
+    const newProgResults: Result[] = winnerInputs
+      .filter((row) => Boolean(row.studentId))
+      .map((row, idx) => {
+        let pts = typeof row.points === "number" && !isNaN(row.points) ? Number(row.points) : 0;
 
-      resultsSnapshot.docs.forEach((docSnap: QueryDocumentSnapshot<DocumentData>) => {
-        if (docSnap.data().program_id === programId) {
-          batch.delete(docSnap.ref);
+        if (row.points === "" || row.points === undefined || row.points === null) {
+          if (row.position === 1) pts = prog.points_1st;
+          else if (row.position === 2) pts = prog.points_2nd;
+          else if (row.position === 3) pts = prog.points_3rd;
+          else if (row.grade === "A") pts = prog.points_A || 5;
+          else if (row.grade === "B") pts = prog.points_B || 3;
+          else if (row.grade === "C") pts = prog.points_C || 2;
+          else if (row.grade === "D") pts = prog.points_D || 1;
+          else pts = 0;
         }
+
+        const resId = `res-${Date.now()}-${idx}-${Math.random().toString(36).substring(2, 6)}`;
+        return {
+          id: resId,
+          program_id: programId,
+          student_id: row.studentId,
+          position: row.position || null,
+          grade: row.grade || null,
+          points_awarded: pts,
+          created_at: now,
+        };
       });
 
-      // 2. Create new results
-      winnerInputs
-        .filter((row) => Boolean(row.studentId))
-        .forEach((row, idx) => {
-          let pts = typeof row.points === "number" && !isNaN(row.points) ? Number(row.points) : 0;
+    setResults((prev) => {
+      const filtered = prev.filter((r) => r.program_id !== programId);
+      const updated = [...filtered, ...newProgResults];
+      setLocalItem("kizilelma_results", updated);
+      return updated;
+    });
 
-          if (row.points === "" || row.points === undefined || row.points === null) {
-            if (row.position === 1) pts = prog.points_1st;
-            else if (row.position === 2) pts = prog.points_2nd;
-            else if (row.position === 3) pts = prog.points_3rd;
-            else if (row.grade === "A") pts = prog.points_A || 5;
-            else if (row.grade === "B") pts = prog.points_B || 3;
-            else if (row.grade === "C") pts = prog.points_C || 2;
-            else if (row.grade === "D") pts = prog.points_D || 1;
-            else pts = 0;
+    setPrograms((prev) => {
+      const updated = prev.map((p) =>
+        p.id === programId ? { ...p, is_revealed: true, updated_at: now } : p
+      );
+      setLocalItem("kizilelma_programs", updated);
+      return updated;
+    });
+
+    if (db && isFirebaseConfigured) {
+      const database = db;
+      try {
+        const resultsSnapshot = await getDocs(collection(database, "results"));
+        const batch = writeBatch(database);
+
+        resultsSnapshot.docs.forEach((docSnap) => {
+          if (docSnap.data().program_id === programId) {
+            batch.delete(docSnap.ref);
           }
-
-          const resId = `res-${Date.now()}-${idx}-${Math.random().toString(36).substring(2, 6)}`;
-          const newResult: Result = {
-            id: resId,
-            program_id: programId,
-            student_id: row.studentId,
-            position: row.position || null,
-            grade: row.grade || null,
-            points_awarded: pts,
-            created_at: now,
-          };
-          batch.set(doc(database, "results", resId), newResult);
         });
 
-      // 3. Mark program as revealed
-      batch.update(doc(database, "programs", programId), {
-        is_revealed: true,
-        updated_at: now,
-      });
+        newProgResults.forEach((newRes) => {
+          batch.set(doc(database, "results", newRes.id), newRes);
+        });
 
-      await batch.commit();
-      console.log("✅ Program results saved to Firebase successfully!");
-    } catch (err) {
-      console.error("Failed to save program results to Firebase:", err);
+        batch.update(doc(database, "programs", programId), {
+          is_revealed: true,
+          updated_at: now,
+        });
+
+        await batch.commit();
+        console.log("✅ Program results saved to Firebase successfully!");
+      } catch (err) {
+        console.error("Failed to save program results to Firebase:", err);
+      }
     }
   };
 
@@ -475,8 +512,6 @@ export function useFestStore() {
   };
 
   const addQuickScore = async (studentId: string, points: number, remarks?: string) => {
-    if (!db) return;
-    const database = db;
     const defaultProg = programs[0] || { id: "quick-award-prog" };
     const resId = `res-${Date.now()}-${Math.random().toString(36).substring(2, 6)}`;
     const newRes: Result = {
@@ -488,22 +523,36 @@ export function useFestStore() {
       created_at: new Date().toISOString(),
     };
 
-    try {
-      await setDoc(doc(database, "results", resId), newRes);
-      console.log("✅ Quick score added to Firebase!");
-    } catch (err) {
-      console.error("Failed to add quick score to Firebase:", err);
+    setResults((prev) => {
+      const updated = [...prev, newRes];
+      setLocalItem("kizilelma_results", updated);
+      return updated;
+    });
+
+    if (db && isFirebaseConfigured) {
+      try {
+        await setDoc(doc(db, "results", resId), newRes);
+        console.log("✅ Quick score added to Firebase!");
+      } catch (err) {
+        console.error("Failed to add quick score to Firebase:", err);
+      }
     }
   };
 
   const deleteResult = async (resultId: string) => {
-    if (!db) return;
-    const database = db;
-    try {
-      await deleteDoc(doc(database, "results", resultId));
-      console.log("✅ Result deleted from Firebase!");
-    } catch (err) {
-      console.error("Failed to delete result from Firebase:", err);
+    setResults((prev) => {
+      const updated = prev.filter((r) => r.id !== resultId);
+      setLocalItem("kizilelma_results", updated);
+      return updated;
+    });
+
+    if (db && isFirebaseConfigured) {
+      try {
+        await deleteDoc(doc(db, "results", resultId));
+        console.log("✅ Result deleted from Firebase!");
+      } catch (err) {
+        console.error("Failed to delete result from Firebase:", err);
+      }
     }
   };
 
@@ -517,7 +566,11 @@ export function useFestStore() {
       total_score: 0,
     };
 
-    setRawTeams((prev) => [...prev, newTeam]);
+    setRawTeams((prev) => {
+      const updated = [...prev, newTeam];
+      setLocalItem("kizilelma_teams", updated);
+      return updated;
+    });
 
     if (db && isFirebaseConfigured) {
       try {
@@ -547,7 +600,11 @@ export function useFestStore() {
       total_points: 0,
     };
 
-    setRawStudents((prev) => [...prev, newStudent]);
+    setRawStudents((prev) => {
+      const updated = [...prev, newStudent];
+      setLocalItem("kizilelma_students", updated);
+      return updated;
+    });
 
     if (db && isFirebaseConfigured) {
       try {
@@ -560,9 +617,11 @@ export function useFestStore() {
   };
 
   const updateStudent = async (studentId: string, updates: Partial<Student>) => {
-    setRawStudents((prev) =>
-      prev.map((s) => (s.id === studentId ? { ...s, ...updates } : s))
-    );
+    setRawStudents((prev) => {
+      const updated = prev.map((s) => (s.id === studentId ? { ...s, ...updates } : s));
+      setLocalItem("kizilelma_students", updated);
+      return updated;
+    });
 
     if (db && isFirebaseConfigured) {
       try {
@@ -575,15 +634,25 @@ export function useFestStore() {
   };
 
   const deleteStudent = async (studentId: string) => {
-    setRawStudents((prev) => prev.filter((s) => s.id !== studentId));
-    setResults((prev) => prev.filter((r) => r.student_id !== studentId));
+    setRawStudents((prev) => {
+      const updated = prev.filter((s) => s.id !== studentId);
+      setLocalItem("kizilelma_students", updated);
+      return updated;
+    });
+
+    setResults((prev) => {
+      const updated = prev.filter((r) => r.student_id !== studentId);
+      setLocalItem("kizilelma_results", updated);
+      return updated;
+    });
 
     if (db && isFirebaseConfigured) {
+      const database = db;
       try {
-        const batch = writeBatch(db);
-        batch.delete(doc(db, "students", studentId));
+        const batch = writeBatch(database);
+        batch.delete(doc(database, "students", studentId));
 
-        const resultsSnapshot = await getDocs(collection(db, "results"));
+        const resultsSnapshot = await getDocs(collection(database, "results"));
         resultsSnapshot.docs.forEach((docSnap: QueryDocumentSnapshot<DocumentData>) => {
           if (docSnap.data().student_id === studentId) {
             batch.delete(docSnap.ref);
@@ -622,7 +691,11 @@ export function useFestStore() {
       points_D: 1,
     };
 
-    setPrograms((prev) => [...prev, newProg]);
+    setPrograms((prev) => {
+      const updated = [...prev, newProg];
+      setLocalItem("kizilelma_programs", updated);
+      return updated;
+    });
 
     if (db && isFirebaseConfigured) {
       try {
@@ -635,9 +708,11 @@ export function useFestStore() {
   };
 
   const updateProgram = async (programId: string, updates: Partial<Program>) => {
-    setPrograms((prev) =>
-      prev.map((p) => (p.id === programId ? { ...p, ...updates } : p))
-    );
+    setPrograms((prev) => {
+      const updated = prev.map((p) => (p.id === programId ? { ...p, ...updates } : p));
+      setLocalItem("kizilelma_programs", updated);
+      return updated;
+    });
 
     if (db && isFirebaseConfigured) {
       try {
@@ -650,15 +725,25 @@ export function useFestStore() {
   };
 
   const deleteProgram = async (programId: string) => {
-    setPrograms((prev) => prev.filter((p) => p.id !== programId));
-    setResults((prev) => prev.filter((r) => r.program_id !== programId));
+    setPrograms((prev) => {
+      const updated = prev.filter((p) => p.id !== programId);
+      setLocalItem("kizilelma_programs", updated);
+      return updated;
+    });
+
+    setResults((prev) => {
+      const updated = prev.filter((r) => r.program_id !== programId);
+      setLocalItem("kizilelma_results", updated);
+      return updated;
+    });
 
     if (db && isFirebaseConfigured) {
+      const database = db;
       try {
-        const batch = writeBatch(db);
-        batch.delete(doc(db, "programs", programId));
+        const batch = writeBatch(database);
+        batch.delete(doc(database, "programs", programId));
 
-        const resultsSnapshot = await getDocs(collection(db, "results"));
+        const resultsSnapshot = await getDocs(collection(database, "results"));
         resultsSnapshot.docs.forEach((docSnap: QueryDocumentSnapshot<DocumentData>) => {
           if (docSnap.data().program_id === programId) {
             batch.delete(docSnap.ref);
@@ -674,9 +759,11 @@ export function useFestStore() {
   };
 
   const updateTeam = async (teamId: string, updates: Partial<Team>) => {
-    setRawTeams((prev) =>
-      prev.map((t) => (t.id === teamId ? { ...t, ...updates } : t))
-    );
+    setRawTeams((prev) => {
+      const updated = prev.map((t) => (t.id === teamId ? { ...t, ...updates } : t));
+      setLocalItem("kizilelma_teams", updated);
+      return updated;
+    });
 
     if (db && isFirebaseConfigured) {
       try {
@@ -689,49 +776,68 @@ export function useFestStore() {
   };
 
   const resetAllPointsToZero = async () => {
-    if (!db) return;
-    const database = db;
-    try {
-      const batch = writeBatch(database);
+    setResults([]);
+    setLocalItem("kizilelma_results", []);
 
-      // 1. Delete all results
-      const resultsSnapshot = await getDocs(collection(database, "results"));
-      resultsSnapshot.docs.forEach((docSnap: QueryDocumentSnapshot<DocumentData>) => {
-        batch.delete(docSnap.ref);
-      });
+    setPrograms((prev) => {
+      const updated = prev.map((p) => ({ ...p, is_revealed: false }));
+      setLocalItem("kizilelma_programs", updated);
+      return updated;
+    });
 
-      // 2. Hide all programs
-      const programsSnapshot = await getDocs(collection(database, "programs"));
-      programsSnapshot.docs.forEach((docSnap: QueryDocumentSnapshot<DocumentData>) => {
-        batch.update(docSnap.ref, { is_revealed: false });
-      });
+    if (db && isFirebaseConfigured) {
+      const database = db;
+      try {
+        const batch = writeBatch(database);
 
-      await batch.commit();
-      console.log("✅ All points reset to zero in Firebase!");
-    } catch (err) {
-      console.error("Failed to reset points in Firebase:", err);
+        const resultsSnapshot = await getDocs(collection(database, "results"));
+        resultsSnapshot.docs.forEach((docSnap: QueryDocumentSnapshot<DocumentData>) => {
+          batch.delete(docSnap.ref);
+        });
+
+        const programsSnapshot = await getDocs(collection(database, "programs"));
+        programsSnapshot.docs.forEach((docSnap: QueryDocumentSnapshot<DocumentData>) => {
+          batch.update(docSnap.ref, { is_revealed: false });
+        });
+
+        await batch.commit();
+        console.log("✅ All points reset to zero in Firebase!");
+      } catch (err) {
+        console.error("Failed to reset points in Firebase:", err);
+      }
     }
   };
 
   const resetToDemoData = async () => {
-    if (!db) return;
-    const database = db;
-    try {
-      const collections = ["results", "students", "programs", "teams"];
-      for (const colName of collections) {
-        const snapshot = await getDocs(collection(database, colName));
-        const batch = writeBatch(database);
-        snapshot.docs.forEach((docSnap: QueryDocumentSnapshot<DocumentData>) =>
-          batch.delete(docSnap.ref)
-        );
-        await batch.commit();
-      }
+    setRawTeams(INITIAL_TEAMS);
+    setRawStudents(INITIAL_STUDENTS);
+    setPrograms(INITIAL_PROGRAMS);
+    setResults(INITIAL_RESULTS);
 
-      await seedFirebase();
-      console.log("✅ Reset to demo data in Firebase!");
-    } catch (err) {
-      console.error("Failed to reset to demo data in Firebase:", err);
-    }
+    setLocalItem("kizilelma_teams", INITIAL_TEAMS);
+    setLocalItem("kizilelma_students", INITIAL_STUDENTS);
+    setLocalItem("kizilelma_programs", INITIAL_PROGRAMS);
+    setLocalItem("kizilelma_results", INITIAL_RESULTS);
+
+    if (db && isFirebaseConfigured) {
+      const database = db;
+      try {
+        const collections = ["results", "students", "programs", "teams"];
+        for (const colName of collections) {
+          const snapshot = await getDocs(collection(database, colName));
+          const batch = writeBatch(database);
+          snapshot.docs.forEach((docSnap: QueryDocumentSnapshot<DocumentData>) =>
+            batch.delete(docSnap.ref)
+          );
+          await batch.commit();
+        }
+
+        await seedFirebase();
+        console.log("✅ Reset to demo data in Firebase!");
+      } catch (err) {
+        console.error("Failed to reset to demo data in Firebase:", err);
+      }
+    };
   };
 
   const getScoreProgressionData = (): ScoreProgressionPoint[] => {

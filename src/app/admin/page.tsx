@@ -77,6 +77,7 @@ export default function AdminPage() {
     deleteSlideshowImage,
     resetAllPointsToZero,
     resetToDemoData,
+    isConfigured,
   } = useFestStore();
 
   // Slideshow Manager State
@@ -3240,6 +3241,47 @@ export default function AdminPage() {
                 <Flame className="w-4 h-4 text-red-400" />
                 <span>Set All Area Points to 0 (Zero)</span>
               </button>
+            </div>
+
+            {/* Database & Persistence Status */}
+            <div className="glass-card rounded-2xl p-6 space-y-4 border border-blue-500/30">
+              <div className="flex items-center justify-between">
+                <h3 className="text-base font-bold text-slate-100 flex items-center gap-2">
+                  <ShieldCheck className="w-5 h-5 text-blue-400" />
+                  <span>Database & Data Persistence Status</span>
+                </h3>
+                <span
+                  className={`px-3 py-1 rounded-full text-xs font-bold flex items-center gap-1.5 ${
+                    isConfigured
+                      ? "bg-emerald-500/20 text-emerald-300 border border-emerald-500/40"
+                      : "bg-cyan-500/20 text-cyan-300 border border-cyan-500/40"
+                  }`}
+                >
+                  <span className={`w-2 h-2 rounded-full ${isConfigured ? "bg-emerald-400 animate-pulse" : "bg-cyan-400"}`} />
+                  {isConfigured ? "Firebase Cloud Sync Active" : "LocalStorage Dual Storage Backup Active"}
+                </span>
+              </div>
+              <p className="text-xs text-slate-300 leading-relaxed">
+                {isConfigured
+                  ? "Your app is connected to Firebase Firestore. All results and scores are backed up locally and synced in real-time across all devices."
+                  : "Running in LocalStorage Backup Mode. Results and uploaded points are automatically saved in your browser storage so they will not be lost across TV reloads or page refreshes."}
+              </p>
+              <div className="p-3 rounded-xl bg-slate-900/80 border border-white/10 space-y-2 text-xs">
+                <p className="font-semibold text-amber-300">💡 Firebase Firestore Security Rules Recommendation:</p>
+                <p className="text-slate-400 text-[11px]">
+                  To prevent Firestore from locking after 30 days (default Test Mode rule expiry), go to your Firebase Console &gt; Firestore Database &gt; Rules and set:
+                </p>
+                <pre className="p-2 rounded bg-black/60 text-[11px] font-mono text-emerald-400 overflow-x-auto">
+{`rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    match /{document=**} {
+      allow read, write: if true;
+    }
+  }
+}`}
+                </pre>
+              </div>
             </div>
 
             {/* Demo Data Reset */}

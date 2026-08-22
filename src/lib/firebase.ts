@@ -14,7 +14,10 @@ export const isFirebaseConfigured = Boolean(
   firebaseConfig.apiKey &&
     firebaseConfig.projectId &&
     firebaseConfig.apiKey !== "your_firebase_api_key_here" &&
-    firebaseConfig.projectId !== "your_project_id_here"
+    firebaseConfig.apiKey !== "AIzaSy..." &&
+    !firebaseConfig.apiKey.endsWith("...") &&
+    firebaseConfig.projectId !== "your_project_id_here" &&
+    firebaseConfig.projectId !== "your-project-id"
 );
 
 // Initialize Firebase only if API Key & Project ID exist and are valid
